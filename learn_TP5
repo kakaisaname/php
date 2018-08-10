@@ -9,5 +9,64 @@ $this->fetch('index/showUpload')
 获取表单提交
 input()
 
-配置获取 设置
-Config::get() set()
+配置获取 设置 加载配置文件
+Config::get() set()  Config::load('配置文件名')
+
+不使用独立配置文件的话，数据库配置信息应该是在config.php中配置  也可以在database.php中，后者覆盖前者
+
+.env文件
+Env::get('database.username');
+
+是否开启路由
+url_route_on
+混合路由
+'url_route_on'  =>  true,
+'url_route_must'=>  false,
+强制路由
+'url_route_on'  		=>  true,
+'url_route_must'		=>  true,
+
+注册路由
+Route::rule('new/:id','index/News/read');
+
+定义new路由命名标识
+Route::rule(['new','new/:id'],'index/News/read');
+
+指定请求方式
+Route::rule('new/:id','News/update','POST');
+Route::get('new/:id','News/read'); // 定义GET请求路由规则
+Route::post('new/:id','News/update'); // 定义POST请求路由规则
+Route::put('new/:id','News/update'); // 定义PUT请求路由规则
+Route::delete('new/:id','News/delete'); // 定义DELETE请求路由规则
+Route::any('new/:id','News/read'); // 所有请求都支持的路由规则
+Route::rule('new/:id','News/read','GET|POST');
+
+批量注册路由规则
+Route::rule(['new/:id'=>'News/read','blog/:name'=>'Blog/detail']);
+Route::get(['new/:id'=>'News/read','blog/:name'=>'Blog/detail']);
+Route::post(['new/:id'=>'News/update','blog/:name'=>'Blog/detail']);
+
+'/' => 'index', // 首页访问路由
+'my'        =>  'Member/myinfo', // 静态地址路由
+'blog/:id'  =>  'Blog/read', // 静态地址和动态地址结合
+'new/:year/:month/:day'=>'News/read', // 静态地址和动态地址结合
+':user/:blog_id'=>'Blog/read',// 全动态地址
+
+//完全匹配
+'new/:cate$'=> 'News/category',
+// 开启路由定义的全局完全匹配
+'route_complete_match'  =>  true,
+Route::rule('new/:id','News/read','GET|POST',['complete_match' => false]);
+
+批量注册
+Route::rule([
+'路由规则1'=>'路由地址和参数',
+'路由规则2'=>['路由地址和参数','匹配参数（数组）','变量规则（数组）']
+...
+],'','请求类型','匹配参数（数组）','变量规则');
+
+Route::rule([
+'new/:id'  =>  'News/read',
+'blog/:id' =>  ['Blog/update',['ext'=>'shtml'],['id'=>'\d{4}']],
+...
+],'','GET',['ext'=>'html'],['id'=>'\d+']);

@@ -4,3 +4,6 @@ array_unshift($queue, "apple", "raspberry");
 
 //返回数组中指定的一列或多列
 array_column($records, 'last_name', 'id');
+
+//— 以指定的微秒数延迟执行
+usleep();
