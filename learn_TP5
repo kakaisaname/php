@@ -1,0 +1,13 @@
+调用model    model()
+
+查询多条数据
+Db::name('advertise')->field("name,img,flag,ishtml,isclick,url")->select()
+
+跳到制定模板
+$this->fetch('index/showUpload')
+
+获取表单提交
+input()
+
+配置获取 设置
+Config::get() set()
