@@ -1,0 +1,165 @@
+redis特性：
+速度快、持久化、多种数据结构、支持多种编辑语言、功能丰富、简单、主从复制、高可用和分布式
+
+1、速度快  10w ops(读写)
+数据存在内存上（主要是这个），c语言写的，单线程
+
+2、持久化
+rdb、aof
+
+3、多种数据结构
+string、hash、list、Sets、Sorted Sets
+
+BitMaps:       位图
+HyperLogLog:   超小内存唯一值计数  在Redis中每个键占用的内容都是12K 可以使用少量固定的内存去存储并识别集合中的唯一元素。而且这个估算的基数并不一定准确，是一个带有 0.81% 标准错误（standard error）的近似值
+（http://irfen.me/redis-hyperloglog-intro/）
+GEO（地理位置），是3.2版本加的 算精度纬度
+
+访问限制
+有时候我们会有一个需求是需要限制一个用户对一个资源的访问频率，我们假定一个用户（用IP作为判断）每分钟对一个资源访问次数不能超过10次。
+
+我们可以使用一个键，每次用户访问则把值加1，当值加到10的时候，我们设定键的过期时间为60秒，并且禁止访问。这时候下次访问发现值为10，则不让访问了，然后60秒后键被删除，这时候再次创建键。这样就可以解决，但是其实这样时间并不精准，问题还是挺大的。
+
+我们还有一个方案：使用队列。前面的章节也说到了，使用列表类型可以用作队列。
+
+我们设定一个队列rate.limiting.192.168.1.1（假定是这个IP），我们把每次的访问时间都添加到队列中，当队列长度达到10以后，判断当前时间与队列第一个值的时间差是否小于60，如果小于60则说明60秒内访问次数超过10次，不允许访问；否则说明可以访问，则把队列头的值删除，队列尾增加当前访问时间。
+
+这种方法可以比较精准的实现访问限制，但是当限制的次数比较大时，这种方法占用的存储空间也会比较大。
+
+4、功能丰富
+发布订阅、LUA脚本、事务、pipeline
+
+5、高可用、分布式
+高可用：Redis-Sentinel
+分布式：Redis-Cluster
+
+6、Redis典型应用场景
+缓存、计数器、消息队列、排行榜、社交网络、实时系统
+
+redis-check-aof  :AOF文件修复工具
+redis-check-dump :RDB文件修复工具
+
+三种启动方法：
+1、最简启动
+2、动态参数启动
+3、配置文件启动
+ps -ef|grep redis           查看进程
+netstat -antpl|grep redis   查看端口
+netstat -anp|grep 9501      根据端口查看
+
+慢查询：
+两个配置
+一：slowlog-max-len
+1、先进先出队列
+2、固定长度
+3、保存在内存内
+
+二：slowlog-log-slower-than
+1、慢查询阀值（单位：微秒）
+2、slowlog-log-slower-tahn=0,记录所有命令 （没意义，一般不这么做）
+
+默认值
+config get slowlog-max-len = 128   （默认长度）
+config get slowlog-log-slower-than = 10000 (10毫秒)
+2.修改配置文件重启（不建议这么做）
+3.动态设置
+config set slowlog-max-len 1000
+config set slowlog-log-slower-than 1000
+
+慢查询命令：
+slowlog get n 获取慢查询队列
+slowlog len 获取慢查询队列长度
+slowlog reset 清空慢查询队列
+
+运维经验：
+slowlog-log-slower-than 不要设置过大 默认10ms 通常设置1ms
+slowlog-max-len 不要设置过小，通常设置1000左右（设置过大好分析日志）
+理解命令的生命周期
+定期持久化慢查询
+
+[pipeline]
+1次pipeline(n条命令) = 1次网络时间 + n次命令时间
+
+redis的命令时间是微秒级别
+pipeline每次条数要控制（网络）
+
+[发布订阅]
+角色：发布者（publisher） 订阅者（subscriber） 频道（channel）
+模型：订阅者订阅当前频道，接收不到频道之前的内容，订阅者可以订阅多个频道
+
+API：publish unsubscribe  subscibe
+
+[位图] 可以做独立用户统计
+bitmap
+API:
+setbit key offset value
+getbit key offset
+bitcount key [start end] 获取位图指定范围位值为1的个数
+bitop
+bitpos
+注意setbit的偏移量，性能不是绝对好
+
+[HyperLogLog]
+基于HyperLogLog算法，极小空间完成独立数量统计
+本质还是字符串
+pfadd key element[...] 添加元素
+pfcount
+pfmerge
+
+不是绝对好，有错误率，错误率：0.81%
+是否需要单条数据
+
+[GEO] 地理信息定位 存储经纬度，计算两地距离，范围计算等  redis3.2+  type(zset)
+
+geoadd key longitude latitude member
+例子：geoadd cities:locations 116.28 39.55 北京
+
+geopos key member[...]
+
+geodist key member1 member2 [unit] 获取两个地理位置的距离  #unit m（米） km(千米) mi(英里) ft(尺)
+
+georadius:获取指定位置范围内的地理位置信息集合
+
+------------------------------------Redis持久化---------------------------------
+AOF、RDB
+对数据的更新将异步的保存在硬盘中
+
+快照 Mysql Dump  Redis RDB
+写日志 Mysql Binlog Redis AOF
+
+RDB文件（二进制）
+
+触发机制-主要三种方式：================
+save(同步)  bgsave(异步)  自动
+
+client 发送 save命令 redis会创建RDB二进制文件  会阻塞redis  复杂度 O（n） 不会消耗额外内存
+文件策略：如存在老的RDB，会被替换
+
+client 发送bgsave命令 redis 会 fork()一个子进程 在后台去保存 fork()会极少的情况下阻塞redis 复杂度 O（n） 会消耗内存
+
+默认配置
+save 900 1
+save 300 10
+save 60  10000
+。。。。。。
+最佳配置：
+不使用 save xxx  xxx
+dbfilename dump-${port}.rdb
+dir /bigdiskpath  硬盘目录 自己指定
+stop-writes-on-bgsave-error yes 出现错误停止写入
+rdbcompression yes  采用压缩
+
+触发机制-不容忽略方式========================
+1、全量复制
+2、debug reload
+3、shutdown
+
+info memory  查看内存使用情况
+RDB是redis内存到硬盘的快照，用于持久化
+save通常会阻塞redis
+bgsave不会阻塞Redis,但会fork新进程
+save自动配置满足任一就会被执行
+有些触发机制不容忽视
+
+
+
