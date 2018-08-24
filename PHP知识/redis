@@ -161,5 +161,72 @@ bgsave不会阻塞Redis,但会fork新进程
 save自动配置满足任一就会被执行
 有些触发机制不容忽视
 
+[aof]
+appendonly  yes（必须）
+no-appenddfsync-on-rewrite yes(需要进行权衡  性能上好用这个) no 数据不会丢失
+rdb耗时耗性能  不可控、丢失数据
+O（n）数据：耗时
+
+aof客户端写入命令，就会再aof文件中写如命令，写入硬盘缓冲区中，再写入AOF文件
+策略：
+always    总是写入，不会丢失数据，IO开销大
+everysec  美妙一次fsync  最多丢失1秒数据，一般用这种
+no        操作系统决定    不用管，不可控，一般不会用
+
+AOF重写： 就是把过期的，重复的，没有用的，可优化的命令进行一个化简成一个小的aof文件
+作用：减少硬盘占用量，加速恢复速度
+
+aof两种重写方式：
+bgrewriteaof:client（客户端）向redis发出命令，返回ok，redis fork出一个子进程，在redis内存中重写，其实并不是在aof文件中去重写
+配置：
+auto-aof-rewrite-min-size:  aof文件重写需要的尺寸
+auto-aof-rewrite-percentage: aof文件增长率
+统计：
+aof-current-size  aof当前尺寸
+aof-base-size     aof上次启动和重写的尺寸
+
+通过统计就可以算出增长率什么的，
+
+用法：bgrewriteaof
+
+【rdb、aof抉择】
+            RDB                 AOF
+启动优先级： 低                   高     （都保存了，以aof数据为准）
+体积：       小                  大
+恢复速度：    快                  慢
+数据安全性：   丢数据             根据策略决定
+轻重：          重               轻
+
+RDB最佳策略："关"、集中管理、主从，从开
+AOF最佳策略："开"：缓存和存储，AOF重写集中管理、everysec
+
+最佳策略：小分片、缓存或者存储、监控（硬盘、内存、负载、网络）、足够的内存
+
+开发运维常见问题：
+fork操作
+进程外开销
+aof追加阻塞
+单机多实例部署
+
+fork操作：
+同步操作，与内存量息息相关，内存越大，耗时越长（与机型有关）
+info:latest_fork_usec (上次redis fork所用时间微秒数)
+
+改善fork:
+1、优先使用武物理机或者高效支持fork操作的虚拟化技术
+2、控制redis实例最大可用内存：maxmemory  内存越大，所用时间越长
+3、合理配置Linux内存分配策略：vm.overcommit_memory=1
+4、降低fork频率：例如放宽AOF重写自动触发时机，不必要的全量复制
+
+
+
+
+
+
+
+
+
+
+
 
 
