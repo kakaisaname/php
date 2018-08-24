@@ -217,7 +217,61 @@ info:latest_fork_usec (上次redis fork所用时间微秒数)
 2、控制redis实例最大可用内存：maxmemory  内存越大，所用时间越长
 3、合理配置Linux内存分配策略：vm.overcommit_memory=1
 4、降低fork频率：例如放宽AOF重写自动触发时机，不必要的全量复制
--
+
+子进程开销和优化：
+1、CPU
+开销：RDB和AOF文件生成，属于CPU密集型
+优化：不做CPU绑定，不和CPU密集型部署
+2、内存
+开销：fork内存开销  copy-on-write
+优化：单机多部署的时候不允许重写
+3、硬盘
+开销：AOF和RDB文件写入，结合iostat,iotop分析
+
+硬盘优化：
+不要和高硬盘负载服务部署一起，存储服务，消息队列等
+no-appendfsync-on-rewrite = yes
+根据写入量决定磁盘类型：例如ssd
+单机多实例持久化文件目录可以考虑分盘
+
+【AOF追加阻塞】
+（主线程）主线程->AOF缓冲区->对比上次fsync时间，大于2s阻塞，小于2s通过  所以redis的数据可能会丢失2s
+
+同步线程）AOF缓冲区->同步线程->同步硬盘
+可以用top命令查看硬盘的使用情况
+
+=================================================redis复制的原理与优化==================================
+单机有什么问题
+1、机器故障（高可用）
+2、容量瓶颈（分布式）
+3、QPS瓶颈（分布式）
+
+一主一从、一主多从
+主从复制作用：数据副本、扩展读性能
+
+主从复制的实现方式
+1、slaveof命令   无需重启，不便于管理
+2、配置          统一配置，需要重启
+
+一般不太要求生产环境中会在一台机器上运用主从复制**********
+
+salveof命令： slaveof ip port (具体的ip port)
+复制是异步的
+取消复制：slaveof no one
+
+修改配置：
+slaveof ip port            成为其他redis的一个从节点，该节点的数据会被清空
+slave-read-only yes
+
+分片命令：
+info replication
+redis-cli -p 6380 info replication
+
+
+
+
+
+
 
 
 
