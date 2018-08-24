@@ -217,6 +217,7 @@ info:latest_fork_usec (上次redis fork所用时间微秒数)
 2、控制redis实例最大可用内存：maxmemory  内存越大，所用时间越长
 3、合理配置Linux内存分配策略：vm.overcommit_memory=1
 4、降低fork频率：例如放宽AOF重写自动触发时机，不必要的全量复制
+-
 
 
 
