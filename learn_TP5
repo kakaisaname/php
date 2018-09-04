@@ -1149,3 +1149,16 @@ $query->where('age','>',$lowest_age)->limit(10);
 }
 
 User::scope('ageAbove', 20)->select();
+
+获取请求控制器
+request()->controller()
+获取请求方法
+request()->action(true)
+//直接调用控制器下的某个方法   这里是service控制器下的Log方法
+controller('service/Log')
+
+//pattern 做验证
+Route::get('detail/:id','index/OutsideOrder/getDetail')->pattern(['id' => '\d+']);
+
+//更新  put方法
+Request::put()

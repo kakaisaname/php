@@ -1,0 +1,73 @@
+----------------------------------------------接口安全性--------------------------------------------------
+接口的安全性主要围绕Token、Timestamp和Sign三个机制展开设计，保证接口的数据不会被篡改和重复调用
+
+Token授权机制：
+用户使用用户名密码登录后服务器给客户端返回一个Token（通常是UUID），并将Token-UserId以键值对的形式存放在缓存服务器中。
+服务端接收到请求后进行Token验证，如果Token不存在，说明请求无效。Token是客户端访问服务端的凭证
+
+时间戳超时机制：
+用户每次请求都带上当前时间的时间戳timestamp，服务端接收到timestamp后跟当前时间进行比对，如果时间差大于一定时间（比如5分钟），
+则认为该请求失效。时间戳超时机制是防御DOS攻击的有效手段
+
+签名机制：
+将 Token 和 时间戳 加上其他请求参数再用MD5或SHA-1算法（可根据情况加点盐）加密，加密后的数据就是本次请求的签名sign，
+服务端接收到请求后以同样的算法得到签名，并跟当前的签名进行比对，如果不一样，说明参数被更改过，直接返回错误标识。
+
+签名机制保证了数据不会被篡改
+
+拒绝重复调用（非必须）：
+客户端第一次访问时，将签名sign存放到缓存服务器中，超时时间设定为跟时间戳的超时时间一致，
+二者时间一致可以保证无论在timestamp限定时间内还是外 URL都只能访问一次。如果有人使用同一个URL再次访问，
+如果发现缓存服务器中已经存在了本次签名，则拒绝服务。如果在缓存中的签名失效的情况下，有人使用同一个URL再次访问，
+则会被时间戳超时机制拦截。这就是为什么要求时间戳的超时时间要设定为跟时间戳的超时时间一致。
+拒绝重复调用机制确保URL被别人截获了也无法使用（如抓取数据）。
+
+整个流程如下：
+
+1、客户端通过用户名密码登录服务器并获取Token
+
+2、客户端生成时间戳timestamp，并将timestamp作为其中一个参数
+
+3、客户端将所有的参数，包括Token和timestamp按照自己的算法进行排序加密得到签名sign
+
+4、将token、timestamp和sign作为请求时必须携带的参数加在每个请求的URL后边（http://url/request?token=123&timestamp=123&sign=123123123）
+
+5、服务端写一个过滤器对token、timestamp和sign进行验证，只有在token有效、timestamp未超时、缓存服务器中不存在sign三种情况同时满足，本次请求才有效
+
+在以上三中机制的保护下，
+
+如果有人劫持了请求，并对请求中的参数进行了修改，签名就无法通过；
+
+如果有人使用已经劫持的URL进行DOS攻击，服务器则会因为缓存服务器中已经存在签名或时间戳超时而拒绝服务，所以DOS攻击也是不可能的；
+
+如果签名算法和用户名密码都暴露了，那齐天大圣来了估计也不好使吧。。。。
+
+最后说一句，所有的安全措施都用上的话有时候难免太过复杂，在实际项目中需要根据自身情况作出裁剪，比如可以只使用签名机制就可以保证信息不会被篡改，
+或者定向提供服务的时候只用Token机制就可以了。如何裁剪，全看项目实际情况和对接口安全性的要求~
+
+======================================GD库安装===================================
+1、去到php的下载目录->ext->gd下
+2、执行/usr/local/php/bin/phpize（具体目录看个人安装情况）
+3、./configure --with-php-config=/usr/local/php/bin/php-config --with-png-dir --with-freetype-dir --with-jpeg-dir --with-gd
+4、如果报 configure: error: jpeglib.h not found  去http://www.ijg.org/files/ 下载jpegsrc.v8d.tar.gz 解压
+tar zxvf jpegsrc.v8d.tar.gz
+cd jpeg-8d
+./configure --enable-shared
+make && make install
+5、再执行下3步骤，make && make install 生成gd.so 去php.ini中加上
+【文件获取方式】
+1、file_get_contents
+$url = 'http://www.baidu.com';
+$data = file_get_contents($url);
+
+2、curl
+$ch = curl_init();
+$timeout = 5;
+curl_setopt ($ch, CURLOPT_URL, 'http://www.baidu.com/');
+curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+$file_contents = curl_exec($ch);
+curl_close($ch);
+echo $file_contents;
+
+3

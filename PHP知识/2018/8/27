@@ -1,0 +1,249 @@
+抽象类
+1.抽象类不能实例化
+2.抽象方法必须被子类重写的方法
+3.如果类中包含抽象方法，那么类就必须定义为抽象类，不论是否包含其他一般方法。
+抽象类通常代表一个抽象概念，它提供一个继承的出发点，当设计新的抽象类时，一定是用来继承的，所以，在一个以继承关系形成的等级结构里面，树叶节点应当是具体类，而树枝节点应当是抽象类。
+
+接口
+接 口把隐式公共方法和属性组合起来，以封装特定功能的一个集合，一旦实现了接口，类就可以支持接口所指定的所有属性和成员。声明接口语法上和声明抽象类完全 相同，但不允许提供接口中任何成员的执行方式。所以接口不能实例化，不能有构造方法和字段；不能有修饰符，不能声明虚拟或静态的，实现接口的类必须要实现 接口中的所有方法和属性。
+一个类可以支持多个接口，多个类也可以支持相同接口。
+
+抽象类和接口的区别
+抽象类可以给出一些成员的实现，接口却不包含成员的实现，抽象类的抽象成员可以被子类部分实现，接口的成员需要实现类完全实现，一个类只能继承抽象类，但可以实现多接口等。
+一，类是对对象的抽象，抽象类是对类的抽象；接口是对行为的抽象。接口是对类的局部（行为）进行的抽象，而抽象类是对类整体（属性，字段，方法）的抽象。
+二.如果行为跨越不同类的对象，可以使用接口；对于一些相似的类对象，用继承抽象类。
+实现接口和继承抽象类并不冲突。
+三.从设计角度讲，抽象类是从子类中发现了公共的东西，泛化出父类，然后子类继承父类，而接口是根本不知道子类的存在，方法如何实现还不确认，预先定义。
+
+mysql存储过程：
+https://www.jianshu.com/p/7b2d74701ccd
+
+
+
+
+setTimeout() 只执行 code 一次。如果要多次调用，请使用 setInterval() 或者让 code 自身再次调用 setTimeout()。
+
+【PHP的魔术常量:】
+定义: 以两个_开头和结尾的常量为魔术常量
+注意: 魔术常量不区分大小写
+_LINE_
+文件中的当前行号。
+
+_FILE_
+文件的完整路径和文件名。如果用在被包含文件中，则返回被包含的文件名。自 PHP 4.0.2 起，FILE 总是包含一个绝对路径（如果是符号连接，则是解析后的绝对路径），而在此之前的版本有时会包含一个相对路径。
+
+_DIR_
+文件所在的目录。如果用在被包括文件中，则返回被包括的文件所在的目录。它等价于 dirname(FILE)
+
+_FUNCTION_
+函数名称（PHP 4.3.0 新加）
+
+_CLASS_
+类的名称（PHP 4.3.0 新加）。自 PHP 5 起本常量返回该类被定义时的名字（区分大小写）
+
+_NAMESPACE_
+当前命名空间的名称（区分大小写）。此常量是在编译时定义的（PHP 5.3.0 新增）
+
+_TRAIT_
+Trait 的名字（PHP 5.4.0 新加）。自 PHP 5.4 起此常量返回 trait 被定义时的名字（区分大小写）
+
+_METHOD_
+类的方法名（PHP 5.0.0 新加）。返回该方法被定义时的名字（区分大小写）
+
+【php已有的魔术方法有】
+__construct，__destruct，__call，__get，__set，__isset，__unset，__sleep，__wakeup，__toString，__set_state 和 __clone
+
+__construct和__destruct
+__construct和__destruct是类的构造函数和析构函数，这个大家经常会用到，相信大家都很熟悉，这里就不多说了。
+
+__sleep和__wakeup
+__sleep和__wakeup是序列化类的时候调用的。当序列化对象时，php将试图在序列动作之前调用该对象的成员函数__sleep()， 当使用unserialize() 恢复对象时， 将调用__wakeup()。
+
+__toString
+__toString是对象被转为string时调用的必须有返回值即:return xxx ; 否则报错，例如
+
+<?php
+class Str
+{
+    private $str;
+
+    public function __construct($str) {
+        $this->str = $str;
+    }
+
+    public function __toString() {
+        return $this->str;
+    }
+}
+
+$class = new Str('Hello');
+echo $class; // 这里对象被转为了string，所以调用了__toString
+?>
+上例将输出 Hello
+
+__call, __get和__set
+__call, __get和__set 这三个魔术方法是最常用的，当调用类中不存在的方法时就会调用__call，而__get和__set则是访问和设置类不存在的成员变量时调用的。
+这三个的函数原型如下：
+__call的例子：
+
+<?php
+class  Caller
+{
+    public   function  __call( $method ,  $args )
+    {
+        echo   "Method $method called:/n" ;
+        print_r($args );
+    }
+}
+
+$foo  =  new  Caller();
+$foo ->test(1, 2);
+?>
+上例将输出：
+Method test called:
+Array
+(
+[0] => 1
+[1] => 2
+)
+
+__get 和 __set 的例子：
+
+<?php
+class a
+{
+    public $c = 0;
+    public $arr = array();
+
+    public function __set($k, $v)
+    {
+        echo $k . "/n";
+        echo $v . "/n";
+
+        $this->arr[$k] = $v;
+    }
+
+    public function __get($k)
+    {
+        echo "The value of $k is " . $this->arr[$k];
+    }
+}
+$a = new a;
+$a->b = 1; // 成员变量b不存在，所以会调用__set
+$a->c = 2; // 成员变量c是存在的，所以不调用__set，无任何输出
+$d = $a->b; // 成员变量b不存在，所以会调用__get
+?>
+上例将输出：
+b
+1
+The value of b is 1
+
+__isset和__unset
+__isset和__unset这两个与__get和__set其实原理是差不多的，他们的原型如下：
+
+bool __isset(string $name)
+void __unset(string $name)
+1
+2
+举个例子：
+
+<?php
+class  a
+{
+    public   $c  = 3;
+    public   $arr  =  array ( 'a'  => 1,  'b'  => 2);
+
+    public   function  __isset( $k )
+    {
+        return  isset( $this ->arr[ $k ]);
+    }
+
+    public   function  __unset( $k )
+    {
+        unset($this ->arr[ $k ]);
+    }
+}
+$a  =  new  a;
+
+var_dump(isset($a ->a));  // 成员变量a不存在，所以调用__isset，返回true
+var_dump(isset($a ->c));  // 成员变量c是存在的，没有调用__isset，同样返回true
+unset($a ->b);  // 成员变量b不存在，调用__unset
+var_dump($a );
+?>
+上例将输出：
+
+bool(true)
+bool(true)
+object(a)#1 (2) {
+    ["c"]=>int(3)
+    ["arr"]=>array(1) {
+         ["a"]=>int(1)
+    }
+}
+
+__clone
+类复制（clone）的时候，如果有定义__clone这个魔术方法就会调用它。
+
+举例如下：
+
+<?php
+class  a
+{
+    public   function  __clone()
+    {
+        echo   "object cloned" ;
+    }
+}
+$a  =  new  a;
+
+$b  =  $a ;  // $b只是$a的引用， 不是克隆，所以不调用__clone，没任何输出。
+$c  = clone  $a ;  // 调用了__clone，将输出 object cloned
+?>
+上例将输出：
+
+object cloned
+
+PHP Trait 的概念和用法 ：代码复用、单继承、减少复杂性。
+相关链接：https://zhuanlan.zhihu.com/p/31362082
+
+Trait 在底层的运行原理：PHP 解释器在编译代码时会把 Trait 部分代码复制粘贴到类的定义体中，但是不会处理这个操作引入的不兼容问题。（是不是很厉害）
+
+【正则表达式】
+https://www.jianshu.com/p/fed457ee8a6c
+http://www.cnblogs.com/zxin/archive/2013/01/26/2877765.html
+
+sleep函数暂停的时间也是不计入脚本的执行时间的
+当你的页面有大量数据时，建议使用set_time_limit()来控制运行时间，默认是30s，所以需要你将执行时间加长点，如 set_time_limit(300)  ,其中将秒数设为0 ，表示持续运行！
+注意：这个函数的运行需要你关闭安全模式，在php.ini中将safe_mode = Off 安全模式设置为Off
+在php.ini可以通过定义max_execution_time来设置PHP页面的最大执行时间，比如下面：
+
+ 代码如下
+set_time_limit(900);
+
+这个函数指定了当前所在php脚本的最大执行时间，
+虽然设定值是900秒，实际上
+最大执行时间＝php.ini里的max_execution_time数值 － 当前脚本已经执行的时间 + 设定值
+假如php.ini里的max_execution_time＝30，当前脚本已经执行10秒，则：
+最大执行时间＝30-10+900＝920秒。
+
+usleep() 函数延迟代码执行若干微秒。
+
+
+
+<a data-brandid="[0-9]+" href="/xc/c[0-9]+.html" class="brand-link "><span class="logo-img">
+<img src="http://cartype-image.mucang.cn/cartype-logo/[0-9]+/[0-9]+/[0-9]+/[0-9]+/.*" alt=.*>
+</span><div class="brand-name"><span>*</span><em></em></div></a>
+
+
+
+
+
+
+<li><a data-brandid="286" href="/xc/c286.html" class="brand-link "><span class="logo-img"><img src="http://cartype-image.mucang.cn/cartype-logo/2017/10/27/17/03ab26c8fa984d06ae40e9885751aeac_160X160.png!80x80" alt="领克"></span><div class="brand-name"><span>领克</span><em></em></div></a>
+</li>
+<li><a data-brandid="87" href="/xc/c87.html" class="brand-link "><span class="logo-img"><img src="http://cartype-image.mucang.cn/cartype-logo/2017/01/06/14/2fe4cf338c1e47d785964741ac8b2779_160X160.png!80x80" alt="路特斯"></span><div class="brand-name"><span>路特斯</span><em></em></div></a></li><li><a data-brandid="81" href="/xc/c81.html" class="brand-link "><span class="logo-img"><img src="http://cartype-image.mucang.cn/cartype-logo/2017/01/06/14/357e5220393c49939c6fa7e70a52ad06_160X160.png!80x80" alt="猎豹汽车"></span><div class="brand-name"><span>猎豹汽车</span><em></em></div></a>
+
+
+
+
+
