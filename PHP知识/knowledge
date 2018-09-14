@@ -70,4 +70,7 @@ $file_contents = curl_exec($ch);
 curl_close($ch);
 echo $file_contents;
 
-3
+3.....
+
+//PHP数组效率
+http://www.sjyhome.com/php/1295.html
