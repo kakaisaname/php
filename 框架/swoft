@@ -1,0 +1,47 @@
+地址：https://doc.swoft.org/master/zh-CN/quickstart/start-server.html
+
+难点：
+通知、切面
+
+// 启动服务，根据 .env 配置决定是否是守护进程
+php bin/swoft start
+
+// 守护进程启动，覆盖 .env 守护进程(DAEMONIZE)的配置
+php bin/swoft start -d
+
+// 重启
+php bin/swoft restart
+
+// 重新加载
+php bin/swoft reload
+
+// 关闭服务
+php bin/swoft stop
+
+//查看端口占用
+netstat -anp|grep 80
+
+查看进程号
+ps -ef|grep swoft
+
+杀死主进程就可以重启
+
+一个完整的swoft应用可以包含：
+
+http 服务(跟传统的框架差不多)
+websocket 服务
+rpc 服务
+
+每一个请求的开始到结束，都是由 Swoole 本身的 onRequest() 或 onReceive() 事件监听并委托给 Dispatcher 来处理并响应的，
+而 Dispatcher 的主要职责是负责调度请求生命周期内的各个参与者(组件)。
+
+HTTP Server
+RPC Server 比较明显的区别在于 RPC Server 下会有一个 ServicePacker(数据打包器) 来负责将服务方法或异常返回的数据打包成一个统一的数据格式，并返回给客户端
+
+Swoft 中一个 Bean 就是一个类的一个对象实例。 容器就是一个巨大的工厂，用于存放和管理 Bean 生命周期。
+
+利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提高程序的可重用性，同时提高开发的效率
+AOP 由 切面、通知、连接点、切入点
+AOP的意义在于分离你的零碎关注点,以一种面向对象外的思路去组织和复用你的各种零散逻辑
+
+

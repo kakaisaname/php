@@ -1,0 +1,4638 @@
+{include file="common/header" /}
+<link href="_STATICPATH_/dist/css/bootstrap-select.min.css" rel="stylesheet">
+<link rel="stylesheet" href="_STATICPATH_/plugins/timepicker/bootstrap-timepicker.min.css">
+<link rel="stylesheet" href="_STATICPATH_/bower_components/bootstrap-daterangepicker/daterangepicker.css"> {include file="common/left" /}
+<style type="text/css">
+    /*    #example1_wrapper .row:nth-child(2){
+            overflow-x: auto;
+            min-height: 740px;
+            margin-right: 0;
+            margin-left: 0;
+        }
+        #example1_wrapper .row:nth-child(2) .col-sm-12{
+            min-width: 1620px;
+            padding: 0;
+        }*/
+
+    #example1_wrapper .row:nth-child(1) {
+        display: none;
+    }
+
+    #example1_wrapper .row:nth-child(3) .col-sm-7 {
+        display: none;
+    }
+    /* 设置必填项背景色 */
+
+    .mustInput {
+        background: #fff3f3;
+    }
+
+    .mustInput:focus {
+        border-color: #ffa8a8;
+    }
+
+    .dropdown-menu {
+        left: -16px;
+    }
+
+    #example4 th {
+        width: 50% !important;
+    }
+
+    #example4_wrapper .dataTables_scrollHeadInner {
+        width: 100% !important;
+    }
+
+    #example4_wrapper .dataTables_scrollHeadInner .dataTable {
+        width: 100% !important;
+    }
+
+    .rowColor {
+        color: white;
+    }
+
+    .whiteColor {
+        color: white;
+    }
+    .grayColor{
+        color: #333;
+    }
+
+    ul.dropdown-menu li {
+        cursor: pointer;
+    }
+
+    .pagination li:active {
+        border: none;
+        background: #fff;
+    }
+
+    .DTFC_LeftBodyWrapper {
+        display: none
+    }
+
+    #example1_wrapper .dataTables_scrollBody {
+        /* min-height: 470px; */
+        border-bottom: none;
+        overflow-y: scroll;
+    }
+
+    .DTFC_ScrollWrapper {
+        /* min-height: 470px; */
+    }
+
+    .DTFC_LeftBodyLiner {
+        overflow: hidden !important;
+    }
+
+    .datepicker-orient-top {
+        z-index: 1111 !important;
+    }
+
+    .redColor {
+        color: red;
+        margin-right: 5px;
+    }
+
+    .deleteMargin {
+        margin-bottom: 0 !important
+    }
+
+    .with-border {
+        display: none;
+    }
+
+    .table.dataTable tbody td {
+        padding: 0 2px !important
+    }
+
+    .dropdown-menu .divider {
+        margin: 1px 0 !important
+    }
+    /*.table.dataTable thead th {
+        padding: 5px 10px 5px 15px !important
+    }*/
+    /* .table.dataTable thead th:nth-child(0) {} */
+
+    .content-header {
+        padding: 5px 15px 0 15px !important
+    }
+
+    .box {
+        margin-bottom: 0px !important;
+        border-top: 0 !important
+    }
+
+    .control-label {
+        margin-top: 5px;
+        text-align: right;
+    }
+
+    .margin_button {
+        margin-bottom: 5px;
+    }
+
+    .content {
+        padding: 0 15px !important
+    }
+
+    .content-header>.breadcrumb {
+        top: 0 !important
+    }
+
+    .title_class {
+        margin-right: 20px;
+    }
+
+    .title_color {
+        color: red;
+    }
+
+    .control-label {
+        font-size: 12px;
+    }
+
+    .disabled_day {
+        color: red;
+    }
+
+    .DTFC_LeftHeadWrapper {
+        display: none
+    }
+
+    .box-header-new {
+        display: none !important
+    }
+
+    .box-body {
+        padding: 0 !important
+    }
+
+    .table-search {
+        /* display: none */
+    }
+
+    #example1_wrapper>td {
+        font-size: 13px !important;
+    }
+
+    table.dataTable tbody tr.selected{
+        background: #bbb;
+    }
+</style>
+{include file="common/left" /}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <small>方案管理-电梯电视</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li>
+                <a href="{:Url('Index/index')}">
+                    <i class="fa fa-dashboard"></i>首页</a>
+            </li>
+        </ol>
+    </section>
+
+    <!-- 删除方案的被踢点位 -->
+    <div class="modal fade bs-example-modal-lg in" id="delBeiti" role="dialog" aria-labelledby="myLargeModalLabel" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document" style="width:68%">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                        <span>×</span>
+                    </button>
+                    <h4 class="modal-title" id="myDelLargeModalLabel">被踢点位</h4>
+                </div>
+                <div class="modal-body" style="max-height: 600px; overflow: scroll">
+                    <table class="table table-bordered" id="delExample6">
+                        <input id="delBtId" type="hidden" value>
+                        <thead>
+
+
+                        <tr>
+                            <th>被踢时间</th>
+                            <th>点位编码</th>
+                            <th>物业类型</th>
+                            <th>物业名称</th>
+                            <th>楼栋名称</th>
+                            <th>单元名称</th>
+                            <th>电梯名称</th>
+                            <th>线路</th>
+                            <th>行政区域</th>
+                            <th>设备尺寸</th>
+                            <th>位置属性</th>
+                            <!--<th>原因</th>-->
+                            <th>被踢原因</th>
+                        </tr>
+
+
+                        </thead>
+                        <tbody id="delBt-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal" type="button" id="delBeiticlose">关 闭</button>
+                    <!--<button type="button" class="btn btn-danger">确 定</button> -->
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+
+
+
+    <div class="modal fade bs-example-modal-lg in" id="beiti" role="dialog" aria-labelledby="myLargeModalLabel" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document" style="width:68%">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                        <span>×</span>
+                    </button>
+                    <h4 class="modal-title" id="myLargeModalLabel">被踢点位</h4>
+                </div>
+                <div class="modal-body" style="max-height: 600px; overflow: scroll">
+                    <table class="table table-bordered" id="example6">
+                        <input id="btId" type="hidden" value>
+                        <thead>
+<<<<<<< HEAD
+                            <tr>
+                                <th>被踢时间</th>
+                                <th>点位编码</th>
+                                <th>物业类型</th>
+                                <th>物业名称</th>
+                                <th>楼栋名称</th>
+                                <th>单元名称</th>
+                                <th>电梯名称</th>
+                                <th>线路</th>
+                                <th>行政区域</th>
+                                <th>设备尺寸</th>
+                                <th>位置属性</th>
+                                <!--<th>原因</th>-->
+                                <th>被踢原因</th>
+                                <th>补回失败原因</th>
+                            </tr>
+=======
+
+
+                        <tr>
+                            <th>被踢时间</th>
+                            <th>点位编码</th>
+                            <th>物业类型</th>
+                            <th>物业名称</th>
+                            <th>楼栋名称</th>
+                            <th>单元名称</th>
+                            <th>电梯名称</th>
+                            <th>线路</th>
+                            <th>行政区域</th>
+                            <th>设备尺寸</th>
+                            <th>位置属性</th>
+                            <!--<th>原因</th>-->
+                            <th>被踢原因</th>
+                            <th>补回失败原因</th>
+                        </tr>
+
+
+>>>>>>> c4529cfa9f98b776d4b3f7cac8217ef4bc5333ee
+                        </thead>
+                        <tbody id="bt-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal" type="button" id="beiticlose">关 闭</button>
+                    <button class="btn btn-danger" id="clear_reason" type="button">&nbsp;&nbsp;清除&nbsp;&nbsp;</button>
+                    <button class="btn btn-danger" id="export_reason" type="button">&nbsp;&nbsp;导出&nbsp;&nbsp;</button>
+                    <button class="btn btn-danger" id="return_point_position" type="button" onclick="returnPointPosition()">&nbsp;&nbsp;补回点位&nbsp;&nbsp;</button>
+                    <!--<button type="button" class="btn btn-danger">确 定</button> -->
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!--被踢点位的点位编码-->
+    <input id="planId" type="hidden" value="">
+    <!-- Main content -->
+    <section class="content container-fluid">
+
+        <div class="row btn-new" style="border-top:1px solid #cccccc;margin-left:0px;margin-right:0px;">
+            <!--  <div class="btn-group" style="margin-top:10px;">
+                 <button type="button" class="btn btn-danger">新建订单</button>
+                 <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown">
+                   <span class="caret"></span>
+                   <span class="sr-only">Toggle Dropdown</span>
+                 </button>
+                 <ul class="dropdown-menu" role="menu">
+                   <li><a href="#">电梯电视</a></li>
+                   <li class="divider"></li>
+                   <li><a href="#">框架</a></li>
+
+                 </ul>
+               </div> -->
+        </div>
+
+        <div class="box box-default box-default-new" style="margin-top: 5px;margin-bottom: 0px;">
+            <div class="box-header with-border">
+                <h1></h1>
+
+                <div class="box-tools pull-right">
+                    <button class="btn btn-box-tool" data-widget="collapse" type="button">
+                        <i class="fa fa-minus"></i>
+                    </button>
+
+                </div>
+            </div>
+            <div class="box-body">
+                <div class="row table-search" style="padding-top: 5px">
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4" style="text-align: left">合同编号</label>
+
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <input class="form-control search-form-table" id="serachOrderId" type="text" onkeyup="value=value.replace(/[^\a-\z\A-\Z0-9\u4E00-\u9FA5\.]/g,'')">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4" style=" text-align: left">投放城市</label>
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <select class="form-control select2 seachTable search-form-table" id="searchPlanCity" style="width:100%">
+                                    {volist name='planCitys' id='vo' k='key'}
+                                    <option value="{$key}">{$vo}</option>
+                                    {/volist}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4" style="text-align: left">方案名称</label>
+                            <input type="hidden" id="change_data" value="">
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <input class="form-control search-form-table" id="searchPlanName" type="text" onkeyup="value=value.replace(/[^\a-\z\A-\Z0-9\u4E00-\u9FA5\.]/g,'')">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4 " style="text-align: left">方案状态</label>
+
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <select class="form-control select2 seachTable search-form-table" id="searchPlanStatus" style="width:100%">
+                                    <option selected="selected" value>全部</option>
+                                    {volist name='planStatus' id='vo' k='key'}
+                                    <option value="{$key}">{$vo}</option>
+                                    {/volist}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4 " style=" text-align: left">开始时间</label>
+
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <div class="input-group date">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </div>
+                                    <input class="form-control pull-right search-form-table" id="searchPlanTime" type="text" value="{$date}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4 " style="text-align: left">业务人员</label>
+
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <select class="form-control select2 seachTable search-form-table" id="searchPlanUser" style="width: 100%;">
+                                    <option selected="selected" value>全部</option>
+                                    {volist name='saleUsers' id='vo' k='key'}
+                                    <option value="{$key}">{$vo}</option>
+                                    {/volist}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4" style=" text-align: left">屏幕类型</label>
+
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <select class="form-control select2 seachTable search-form-table" id="searchPlanType" style="width: 100%;">
+                                    {volist name='planTypes' id='vo' k='key'}
+                                    <option value="{$key}">{$vo}</option>
+                                    {/volist}
+                                    <option value="004" selected="selected">上屏+联动</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4 " style=" text-align: left">创建人</label>
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <select class="form-control selectpicker" id="searchCreateMan" data-live-search="true" multiple style="width: 100%;" data-size='10'>
+                                    <option value="">全部</option>
+                                    {volist name='mans' id='vo' k='key'}
+                                    <option value="{$key}">{$vo}</option>
+                                    {/volist}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 margin_button">
+                        <div class="form-group deleteMargin">
+                            <label class="control-label col-md-4 " style="text-align: left">拍照要求</label>
+                            <div class="col-md-8 col-xs-8 col-sm-8">
+                                <select class="form-control select2 seachTable search-form-table" id="addPhotoRequire_search" style="width: 100%;">
+                                    <option value="">&nbsp;</option>
+                                    {volist name='planPhotoRequire' id='vo' k='key'}
+                                    <option value="{$key}">{$vo}</option>
+                                    {/volist}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 margin_button">
+                        <div class="form-group deleteMargin">
+                            <div style="text-align:left">
+<<<<<<< HEAD
+                                <button class="btn  btn-danger btn-sm" id="serachData" type="button" onclick="serachData()">搜索</button>
+=======
+
+                                <input type="checkbox"  id="onlyDeleted">只查看已删除方案
+                                <button class="btn  btn-danger btn-sm" id="serachData" onclick="serachData()" type="button">搜索</button>
+
+>>>>>>> c4529cfa9f98b776d4b3f7cac8217ef4bc5333ee
+                                <button class="btn  btn-danger btn-sm" id="reastData" type="button">重置</button>
+                                <button class="btn  btn-danger btn-sm" id="export_data" type="button">方案导出</button>
+                                <input id="export-auth" type="hidden" value>
+                                <button class="btn  btn-danger btn-sm" id="export_point" type="button">匹配点位</button>
+                                <button class="btn  btn-primary btn-sm" type="button" onclick="addPlan()">新建方案</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="box content_box">
+            <div class="box-header box-header-new"></div>
+            <div class="box-body tableWrapper" style="font-size:13px;">
+                <table class="table table-bordered table-striped" id="example1" style="table-layout:fixed;height:15px;line-height:15px;">
+
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Main Footer -->
+
+<!-- 方案排斥 -->
+<div class="modal fade" id="addExclude" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width:60%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title">方案排斥</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+
+                    <div class="col-xs-6" style="height: 650px;">
+
+                        <div class="box" style="margin-top:5px;">
+                            <div class="box-header">
+                                <div class="row" style="margin-top:2px;">
+                                    <div class="col-xs-2">
+                                        <h6>开始日期：</h6>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <input class="form-control pull-right" id="excludeTime" type="text">
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <h6>结束日期：</h6>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <input class="form-control pull-right" id="excludeEndTime" type="text">
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:6px;">
+                                    <div class="col-xs-2">
+                                        <h6>屏幕类型：</h6>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <select class="form-control select2" id="excludePlanType" style="width: 100%;">
+                                            <option selected="selected" value>全部</option>
+                                            {volist name='planTypes' id='vo' k='key'}
+                                            <option value="{$key}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                    <div class="col-xs-2">
+                                        <h6>方案查询：</h6>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <input class="form-control" id="excludePlanName" type="text">
+                                    </div>
+                                </div>
+
+                                <div class="row" style="margin-top:6px;">
+
+                                </div>
+
+                                <div class="row" style="margin-top:6px;">
+                                    <div class="col-xs-3">
+                                        <button class="btn btn-sm btn-block btn-danger" id="serachPlan" type="button">查询
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="exclude(4,1)">设备排斥
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="exclude(3,1)">单元排斥
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="exclude(2,1)">楼栋排斥
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3" style="margin-top:6px;">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="exclude(1,1)">项目排斥
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3" style="margin-top:6px;">
+                                        <button class="btn btn-sm btn-block btn-danger chice_all" type="button">
+                                            全选
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3" style="margin-top:6px;">
+                                        <button class="btn btn-sm btn-block btn-danger chice_all" type="button">
+                                            反选
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /.box-header -->
+                            <div class="box-body">
+                                <table class="table table-bordered table-striped" id="example2">
+
+                                </table>
+                            </div>
+                            <!-- /.box-body -->
+                        </div>
+
+                    </div>
+                    <div class="col-xs-6" style="height: 650px;">
+                        <div class="box" style="margin-top:5px;">
+                            <div class="box-header">
+                                <div class="row" style="margin-top:6px;">
+                                    <div class="col-xs-3">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="exclude(4,2)">设备排斥
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="exclude(3,2)">单元排斥
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="exclude(2,2)">楼栋排斥
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="exclude(1,2)">项目排斥
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3" style="margin-top:6px;">
+                                        <button class="btn btn-sm btn-block btn-danger chice_all_right" type="button">全选
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3" style="margin-top:6px;">
+                                        <button class="btn btn-sm btn-block btn-danger chice_all_right" type="button">反选
+                                        </button>
+                                    </div>
+                                    <div class="col-xs-3" style="margin-top:6px;">
+                                        <button class="btn btn-sm btn-block btn-danger" type="button" onclick="delExclude()">删除
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!-- /.box-header -->
+                            <div class="box-body">
+                                <table class="table table-bordered table-striped" id="example3">
+
+                                </table>
+                            </div>
+                            <!-- /.box-body -->
+                        </div>
+                    </div>
+                </div>
+
+                <input id="excludePlanId" type="hidden">
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="editPlanData">
+<!-- 新增方案模块 -->
+<div class="modal fade" id="addPlan" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width:70%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myPlanTitle">新增方案</h4>
+            </div>
+            <div class="modal-body">
+                <div class="box box-default" style="margin-top: 10px;margin-bottom: 0px;">
+                    <div class="box-header with-border">
+                        <h5>基本信息</h5>
+
+                        <div class="box-tools pull-right">
+                            <button class="btn btn-box-tool" data-widget="collapse" type="button">
+                                <i class="fa fa-minus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="row">
+
+                            <div class="col-md-6 ccc" style="width:100%">
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>业务人员：</label>
+                                    <select class="form-control select2 mustInput" id="addSaleUser" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='saleUsers' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>合同：</label>
+                                    <select class="form-control select2 mustInput" id="addOrder" style="width: 100%;">
+
+                                    </select>
+                                </div>
+                                <input class="addOrder" type="hidden">
+
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>广告名称：</label>
+                                    <input class="form-control mustInput" id="addName" type="text" placeholder="长度不能超过20位">
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>投放行业：</label>
+                                    <select class="form-control select2 mustInput" id="addTrade" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='trades' id='vo'}
+                                        <option value="{$vo.code}">{$vo.name}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>投放开始时间：</label>
+
+                                    <div class="input-group date">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input class="form-control pull-right" id="addBeginTime" type="text" placeholder="开始时间只能在一年内" value="{$date}">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>投放结束时间：</label>
+                                    <span style="float: right; padding-top: 2px; font-size: 12px;">
+                                        共：
+                                        <span id="differ_days" style="color: #dd4b39;">0天</span>
+                                    </span>
+                                    <div class="input-group date">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input class="form-control pull-right mustInput" id="addEndTime" type="text">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>销售类型：</label>
+                                    <select class="form-control select2 mustInput" id="addSaleType" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planSaleTypes' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3" id="singlePrice" style="display: none">
+                                    <!-- small box -->
+                                    <label>上刊单价：</label>
+                                    <input class="form-control" id="addSinglePrice" type="number" min="0" max="10000000" step="0.01" onkeyup="this.value=this.value.toString().match(/^\d+(?:\.\d{0,2})?/)">
+                                </div>
+                                <div class="col-md-3" id="productPrice" style="display: none">
+                                    <!-- small box -->
+                                    <label>制作费：</label>
+                                    <input class="form-control" id="addProductPrice" type="number" max="10000000" min="0" step="0.01" onkeyup="this.value=this.value.toString().match(/^\d+(?:\.\d{0,2})?/)">
+                                </div>
+                                <div class="col-md-3" id="compactNum">
+                                    <!-- small box -->
+                                    <label>合同数：</label>
+                                    <input class="form-control" id="addCompactNum" type="number" min="0" max="10000000" step="1" step="0" onkeyup="this.value=this.value.replace(/[^u4e00-u9fa5w]/g,'')">
+                                </div>
+                                <div class="col-md-3" id="regulateNum">
+                                    <!-- small box -->
+                                    <label>调剂数：</label>
+                                    <input class="form-control" id="addRegulateNum" type="number" min="0" max="10000000" step="1" step="0" onkeyup="this.value=this.value.replace(/[^u4e00-u9fa5w]/g,'')">
+                                </div>
+                                <div class="col-md-3">
+                                    <label>备注：</label>
+                                    <input class="form-control" id="remark" type="text" maxlength="10" placeholder="长度不能超过10">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box box-default" style="margin-top: 10px;margin-bottom: 0px;">
+                    <div class="box-header with-border">
+                        <h5>投放策略</h5>
+
+                        <div class="box-tools pull-right">
+                            <button class="btn btn-box-tool" data-widget="collapse" type="button">
+                                <i class="fa fa-minus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-6" style="width: 100%">
+                                <div class="col-md-3">
+                                    <label>
+                                        <span class="redColor">*</span>投放城市：</label>
+                                    <select class="form-control select2 mustInput" id="addCity" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planCitys' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>广告时长：</label>
+
+                                    <select class="form-control select2 mustInput" id="addSeconds" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planSeconds' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>投放频次：</label>
+
+                                    <select class="form-control select2 mustInput" id="addNumbers" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planNumbers' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>屏幕类型：</label>
+
+                                    <select class="form-control select2 mustInput" id="addType" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planTypes' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                    <input id="oldAddType" type="hidden" value>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>投放方式：</label>
+
+                                    <select class="form-control select2 mustInput" id="addDeliveryMode" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planDeliveryMode' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3" style="margin-top:28px;text-align:center">
+                                    <input id="addContinuation" type="checkbox" value="0">
+                                    <label>行业不连续</label>
+                                </div>
+                                <div class="col-md-3" style="margin-top:28px;text-align:center">
+                                    <input id="addMoreTwo" type="checkbox" value="0">
+                                    <label>同行业不超过两个</label>
+                                </div>
+                                <div class="col-md-3" style="margin-top:28px;text-align:center">
+                                    <input id="addWholeNetwork" type="checkbox" value="0">
+                                    <label>空位销售</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box box-default" style="margin-top: 10px;margin-bottom:0px;">
+                    <div class="box-header with-border">
+                        <h5>拍照要求</h5>
+
+                        <div class="box-tools pull-right">
+                            <button class="btn btn-box-tool" data-widget="collapse" type="button">
+                                <i class="fa fa-minus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="row">
+
+                            <div class="col-md-6" style="width:100%;margin-top:10px;">
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>拍照要求：</label>
+                                    <select class="form-control select2 mustInput" id="addPhotoRequire" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planPhotoRequire' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>照片打包：</label>
+                                    <select class="form-control select2" id="addPhotoPack" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='yesNo' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>拍照方式：</label>
+                                    <select class="form-control select2" id="addPhotoReport" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planPhotoReport' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>上刊带报：</label>
+                                    <select class="form-control select2" id="addPhotoUp" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='yesNo' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <!-- small box -->
+                                    <label>下刊带报：</label>
+                                    <select class="form-control select2" id="addPhotoDown" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='yesNo' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+                <button class="btn btn-primary" id="addSubmit" type="button" onclick="addPlanSubmit()">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+<input id="pId" type="hidden" value="">
+<!-- 导出列表模块 -->
+<div class="modal fade" id="explain" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width:70%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" >方案导出</h4>
+            </div>
+            <div class="modal-body">
+                <div class="box box-default" style="margin-top: 10px;margin-bottom: 0px;">
+                    <div class="box-header with-border">
+                        <h5>基本信息</h5>
+
+                        <div class="box-tools pull-right">
+                            <button class="btn btn-box-tool" data-widget="collapse" type="button">
+                                <i class="fa fa-minus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="col-md-6 ccc" style="width:100%">
+
+                            <div class="col-md-3">
+
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="exportCondition" id="exportCondition1" value="false" checked>按列表导出
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="exportCondition" id="exportCondition2" value="true">按选项导出
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-6 ccc" style="width:100%">
+
+                            <div class="col-md-3">
+                                <label>投放开始时间：</label>
+
+                                <div class="input-group date">
+                                    <div class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </div>
+
+                                    <input type="text" class="form-control pull-right timeFrame" id="exportBeginTime" value="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6" style="width: 100%">
+
+                                <div class="col-md-3" style="padding: 1%;">
+                                    <label class="control-label col-md-4 " style=" text-align: left">投放城市</label>
+                                    <div class="col-md-8 col-xs-8 col-sm-8">
+                                        <select class="form-control selectpicker" id="exportCity" data-live-search="true" multiple style="width: 100%;" data-size='10'>
+                                            <option value="">全部</option>
+                                            {volist name='planCitys' id='vo' k='key'}
+                                            <option value="{$key}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-3" style="padding: 1%;">
+                                    <label class="control-label col-md-4 " style=" text-align: left">方案状态</label>
+                                    <div class="col-md-8 col-xs-8 col-sm-8">
+                                        <select class="form-control selectpicker" id="exportStatus" data-live-search="true" multiple style="width: 100%;" data-size='10'>
+                                            <option value="">全部</option>
+                                            {volist name='planStatus' id='vo' k='key'}
+                                            <option value="{$key}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3" style="padding: 1%;">
+                                    <label class="control-label col-md-4 " style=" text-align: left">屏幕类型</label>
+                                    <div class="col-md-8 col-xs-8 col-sm-8">
+                                        <select class="form-control selectpicker" id="exportType" data-live-search="true" multiple style="width: 100%;" data-size='10'>
+                                            <option value="">全部</option>
+                                            {volist name='planTypes' id='vo' k='key'}
+                                            <option value="{$key}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-md-6" style="width: 100%">
+
+                                <div class="col-md-3" style="padding: 1%;">
+                                    <label class="control-label col-md-4 " style=" text-align: left">业务人员</label>
+                                    <div class="col-md-8 col-xs-8 col-sm-8">
+                                        <select class="form-control selectpicker" id="exportSaleUser" data-live-search="true" multiple style="width: 100%;" data-size='10'>
+                                            <option value="">全部</option>
+                                            {volist name='saleUsers' id='vo' k='key'}
+                                            <option value="{$key}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3" style="padding: 1%;">
+                                    <label class="control-label col-md-4 " style=" text-align: left">创建人</label>
+                                    <div class="col-md-8 col-xs-8 col-sm-8">
+                                        <select class="form-control selectpicker" id="exportCreateMan" data-live-search="true" multiple style="width: 100%;" data-size='10'>
+                                            <option value="">全部</option>
+                                            {volist name='mans' id='vo' k='key'}
+                                            <option value="{$key}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="col-md-3" style="padding: 1%;">
+                                    <label class="control-label col-md-4 " style=" text-align: left">拍照要求</label>
+                                    <div class="col-md-8 col-xs-8 col-sm-8">
+                                        <select class="form-control selectpicker" id="exportPhotoRequire" data-live-search="true" multiple style="width: 100%;" data-size='10'>
+                                            <option value="">全部</option>
+                                            {volist name='planPhotoRequire' id='vo' k='key'}
+                                            <option value="{$key}">{$vo}</option>
+                                            {/volist}
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+
+
+
+            </div>
+
+
+        </div>
+        <div class="modal-footer" style="background-color: #fff">
+            <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+            <button class="btn btn-primary" id="exportSubmit" type="button" onclick="exportPlanSubmit()">提交</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- 修改删除方案名称模块 -->
+<div class="modal fade" id="editDelete" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width:70%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" >修改方案名</h4>
+            </div>
+            <div class="modal-body">
+                <div class="box box-default" style="margin-top: 10px;margin-bottom: 0px;">
+                    <div class="box-header with-border">
+                        <h5>基本信息</h5>
+
+                        <div class="box-tools pull-right">
+                            <button class="btn btn-box-tool" data-widget="collapse" type="button">
+                                <i class="fa fa-minus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+
+
+
+                        <div class="row">
+                            <div class="col-md-6" style="width: 100%">
+
+                                <div class="col-md-3" style="padding: 1%;">
+                                    <label class="control-label col-md-4 " style=" text-align: left">方案名称</label>
+                                    <div class="col-md-8 col-xs-8 col-sm-8">
+                                        <input type="text" value="" id="deletePlanName">
+                                        <input type="hidden" value="" id="deletePlanId">
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+
+
+
+
+            </div>
+
+
+        </div>
+        <div class="modal-footer" style="background-color: #fff">
+            <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+            <button class="btn btn-primary" type="button" onclick="doEditDelete()">提交</button>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+<div class="modal fade" id="sendMessage" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">联系人列表</h4>
+            </div>
+            <div class="modal-body" id="contacts">
+
+                <!--  <div class="row" style='margin-top:6px;height:40px;line-height:40px;'>
+                       <div class="col-xs-2">
+                             联系人：
+                       </div>
+                       <div class="col-xs-2">
+                             欧阳海峰
+                       </div>
+                       <div class="col-xs-2">
+                            联系电话：
+                       </div>
+                       <div class="col-xs-2">
+                             18228009796
+                       </div>
+                       <div class="col-xs-3" style='margin-top:5px;'>
+                             <button type="button" class="btn btn-sm btn-block btn-danger" onclick='delExclude()'>发送短信</button>
+                       </div>
+
+                   </div>    -->
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sendMessage1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">联系人列表</h4>
+            </div>
+            <div class="modal-body" id="contacts1">
+
+                <!--  <div class="row" style='margin-top:6px;height:40px;line-height:40px;'>
+                       <div class="col-xs-2">
+                             联系人：
+                       </div>
+                       <div class="col-xs-2">
+                             欧阳海峰
+                       </div>
+                       <div class="col-xs-2">
+                            联系电话：
+                       </div>
+                       <div class="col-xs-2">
+                             18228009796
+                       </div>
+                       <div class="col-xs-3" style='margin-top:5px;'>
+                             <button type="button" class="btn btn-sm btn-block btn-danger" onclick='delExclude()'>发送短信</button>
+                       </div>
+
+                   </div>    -->
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changeDate" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">调整结束日</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row" style="margin-top:2px;">
+                    <div class="col-xs-2">
+                        <h6>结束日：</h6>
+                    </div>
+                    <div class="col-xs-5">
+                        <div class="input-group date">
+                            <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                            <input class="form-control pull-right" id="changeDateTime" type="text">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+                <button class="btn btn-primary" type="button" onclick="addChangeDate()">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changeSaleUser" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">编辑业务员/合同</h4>
+            </div>
+            <div class="modal-body" style="height: 100px!important;">
+
+                <div class="col-md-6">
+                    <!-- small box -->
+                    <label style="display: inline-block">
+                        <span class="redColor">*</span>
+                        业务人员：</label>
+                    <select class="form-control select2 mustInput" id="editSaleUser" style="width: 100%;">
+                        <option value="">&nbsp;</option>
+                        {volist name='saleUsers' id='vo' k='key'}
+                        <option value="{$key}">{$vo}</option>
+                        {/volist}
+                    </select>
+
+                </div>
+                <div class="col-md-6">
+                    <!-- small box -->
+                    <label>
+                        <span class="redColor">*</span>
+                        合同：</label>
+                    <select class="form-control select2 mustInput" id="editOrder" style="width: 100%;">
+
+                    </select>
+                </div>
+                <input type="hidden" class="editOrder">
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+                <button class="btn btn-primary" type="button" onclick="editSaleOrOrder()">提交</button>
+                <input type="hidden" id="saleId" value="">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="splitPlan" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">方案拆解</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row" style="margin-top:2px;">
+                    <div class="box" style="margin-top:5px;padding:10px;">
+                        <div class="box-header">
+                            <div class="row split">
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="box-body">
+                        <table class="table table-bordered table-striped" id="example4">
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+                <button class="btn btn-primary" type="button" onclick="submitSplit()">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--点位导出-->
+<div class="modal fade" id="porit" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document" style="width:40%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal" type="button" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="myPlanTitle">匹配点位</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="box box-default" style="margin-top: 10px;margin-bottom: 0px;">
+                    <div class="box-header with-border">
+                        <h5>基本信息</h5>
+
+                        <div class="box-tools pull-right">
+                            <button class="btn btn-box-tool" data-widget="collapse" type="button">
+                                <i class="fa fa-minus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-6" style="width:100%;margin-top:10px;">
+                                <div class="col-lg-3 col-xs-6" style="width:50%">
+                                    <!-- small box -->
+                                    <label>投放开始时间：</label>
+
+                                    <div class="input-group date">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input class="form-control pull-right" id="export_startTime" type="text" placeholder="开始时间只能在一年内" value="{$date}">
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-xs-6" style="width:50%">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>投放结束时间：</label>
+
+                                    <div class="input-group date">
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+                                        <input class="form-control pull-right" id="export_endTime" type="text">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" style="width:100%;margin-top:10px;">
+                                <div class="col-lg-3 col-xs-6" style="width:50%">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>投放行业：</label>
+                                    <select class="form-control select2" id="export_addTrade" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='trades' id='vo'}
+                                        <option value="{$vo.code}">{$vo.name}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="box box-default" style="margin-top: 10px;margin-bottom: 0px;">
+                    <div class="box-header with-border">
+                        <h5>投放策略</h5>
+
+                        <div class="box-tools pull-right">
+                            <button class="btn btn-box-tool" data-widget="collapse" type="button">
+                                <i class="fa fa-minus"></i>
+                            </button>
+
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="row">
+
+                            <div class="col-md-6" style="width:100%">
+                                <div class="col-lg-3 col-xs-6" style="width:100%">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>投放城市：</label>
+
+                                    <select class="form-control select2" id="export_addCity" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planCitys' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" style="width:100%;margin-top:10px;">
+                                <div class="col-lg-3 col-xs-6" style="width:50%">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>广告时长：</label>
+
+                                    <select class="form-control select2" id="export_addSeconds" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planSeconds' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-xs-6" style="width:50%">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>投放频次：</label>
+
+                                    <select class="form-control select2" id="export_addNumbers" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planNumbers' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" style="width:100%;margin-top:10px;">
+                                <div class="col-lg-3 col-xs-6" style="width:50%">
+                                    <!-- small box -->
+                                    <label>
+                                        <span class="redColor">*</span>屏幕类型：</label>
+
+                                    <select class="form-control select2" id="export_addType" style="width: 100%;">
+                                        <option value="">&nbsp;</option>
+                                        {volist name='planTypes' id='vo' k='key'}
+                                        <option value="{$key}">{$vo}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!--<div class="box box-default" style="margin-top: 10px;margin-bottom: 0px;">-->
+                <!--<div class="box-header with-border">-->
+                <!--<h5>排斥规则</h5>-->
+
+                <!--<div class="box-tools pull-right">-->
+                <!--<button type="button" class="btn btn-box-tool" data-widget="collapse"><i-->
+                <!--class="fa fa-minus"></i></button>-->
+
+                <!--</div>-->
+                <!--</div>-->
+                <!--<div class="box-body">-->
+                <!--<div class="row">-->
+
+                <!--<div class="col-md-6" style='width:100%'>-->
+                <!--<div class="col-lg-3 col-xs-6" style='width:30%'>-->
+                <!--<label>-->
+                <!--<input type="checkbox" id='export_addContinuation' value=0>-->
+                <!--行业不连续-->
+                <!--</label>-->
+                <!--</div>-->
+
+                <!--<div class="col-lg-3 col-xs-6" style='width:30%'>-->
+                <!--<label>-->
+                <!--<input type="checkbox" id='export_addMoreTwo' value=0>-->
+                <!--同行业不超过两个-->
+                <!--</label>-->
+                <!--</div>-->
+                <!--</div>-->
+
+                <!--</div>-->
+                <!--&lt;!&ndash; /.row &ndash;&gt;-->
+                <!--</div>-->
+                <!-- /.box-body -->
+
+                <!--</div>-->
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal" type="button">关闭</button>
+                <button class="btn btn-primary" id="export_fun" type="button">导出</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input id="splitId" type="hidden">
+<input type="hidden" id="sendCustomerNum">
+<input type="hidden" id="cusConfirmNum">
+<input type="hidden" id="issend">
+<input id="dateId" type="hidden"> {include file="common/foot" /}
+<script src="_STATICPATH_/bower_components/moment/min/moment.min.js"></script>
+
+<script src="_STATICPATH_/bower_components/select2/dist/js/select2.full.min.js"></script>
+
+<script src="_STATICPATH_/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+
+<script src="_STATICPATH_/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+
+<script src="_STATICPATH_/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+
+<script src="_STATICPATH_/bower_components/fastclick/lib/fastclick.js"></script>
+
+<script src="_STATICPATH_/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+<script src="_STATICPATH_/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+
+<script src="_STATICPATH_/dist/js/adminlte.min.js"></script>
+
+<script src="_STATICPATH_/dist/js/bootstrap-select.min.js"></script>
+<script src="_STATICPATH_/dist/js/defaults-zh_CN.min.js"></script>
+
+
+<script src="_STATICPATH_/js/dataTables.fixedColumns.min.js" type="text/javascript"></script>
+
+
+<script>
+
+
+    $('#exportBeginTime').daterangepicker({
+        showDropdowns: true,
+        "linkedCalendars": false,
+        "locale": {
+            separator: ' - ',
+            applyLabel: "应用",
+            cancelLabel: "取消",
+            daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+            monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+        }
+    }, function(start, end, label) {
+        exportBeginTime = start;
+        exportEndTime = end;
+        if(!this.startDate) {
+            this.element.val('');
+        }
+    });
+
+
+    function conso(){
+        $("body").mLoading({
+            text: '数据正在加载中'
+        });
+        setTimeout(function() {
+            var table = $('#example1').DataTable();
+            table.draw(true);
+            $("body").mLoading('hide');
+        }, 1000)
+    }
+    $(function() {
+
+
+        /*设置表格高度*/
+        setTabHig()
+        $("#addSaleType").select2()
+        $('#searchCreateMan').selectpicker('val',['']);
+        $('#searchCreateMan').on('changed.bs.select', function (ele,index,status) {
+            var _clickText = $(this).children('option').eq(index).text();
+            var _clickVal = $(this).children('option').eq(index).val();
+            var noTabu = $(this).children('option:contains(全部)').val();
+            if(_clickText === '全部' && status === true){
+                $(this).selectpicker('val',['']);
+                $(this).selectpicker('refresh');
+            }else{
+                var flag = $(this).val().some(function(val){
+                    return val === noTabu
+                })
+                if(flag){
+                    $(this).selectpicker('val',_clickVal);
+                    $(this).selectpicker('refresh');
+                }
+            }
+            changeFun();
+        });
+
+        $('#exportCity').on('changed.bs.select', function (ele,index,status) {
+            var _clickText = $(this).children('option').eq(index).text();
+            var _clickVal = $(this).children('option').eq(index).val();
+            var noTabu = $(this).children('option:contains(全部)').val();
+            if(_clickText === '全部' && status === true){
+                $(this).selectpicker('val',['']);
+                $(this).selectpicker('refresh');
+            }else{
+                var flag = $(this).val().some(function(val){
+                    return val === noTabu
+                })
+                if(flag){
+                    $(this).selectpicker('val',_clickVal);
+                    $(this).selectpicker('refresh');
+                }
+            }
+        });
+        $('#exportStatus').on('changed.bs.select', function (ele,index,status) {
+            var _clickText = $(this).children('option').eq(index).text();
+            var _clickVal = $(this).children('option').eq(index).val();
+            var noTabu = $(this).children('option:contains(全部)').val();
+            if(_clickText === '全部' && status === true){
+                $(this).selectpicker('val',['']);
+                $(this).selectpicker('refresh');
+            }else{
+                var flag = $(this).val().some(function(val){
+                    return val === noTabu
+                })
+                if(flag){
+                    $(this).selectpicker('val',_clickVal);
+                    $(this).selectpicker('refresh');
+                }
+            }
+        });
+        $('#exportType').on('changed.bs.select', function (ele,index,status) {
+            var _clickText = $(this).children('option').eq(index).text();
+            var _clickVal = $(this).children('option').eq(index).val();
+            var noTabu = $(this).children('option:contains(全部)').val();
+            if(_clickText === '全部' && status === true){
+                $(this).selectpicker('val',['']);
+                $(this).selectpicker('refresh');
+            }else{
+                var flag = $(this).val().some(function(val){
+                    return val === noTabu
+                })
+                if(flag){
+                    $(this).selectpicker('val',_clickVal);
+                    $(this).selectpicker('refresh');
+                }
+            }
+        });
+        $('#exportSaleUser').on('changed.bs.select', function (ele,index,status) {
+            var _clickText = $(this).children('option').eq(index).text();
+            var _clickVal = $(this).children('option').eq(index).val();
+            var noTabu = $(this).children('option:contains(全部)').val();
+            if(_clickText === '全部' && status === true){
+                $(this).selectpicker('val',['']);
+                $(this).selectpicker('refresh');
+            }else{
+                var flag = $(this).val().some(function(val){
+                    return val === noTabu
+                })
+                if(flag){
+                    $(this).selectpicker('val',_clickVal);
+                    $(this).selectpicker('refresh');
+                }
+            }
+        });
+        $('#exportCreateMan').on('changed.bs.select', function (ele,index,status) {
+            var _clickText = $(this).children('option').eq(index).text();
+            var _clickVal = $(this).children('option').eq(index).val();
+            var noTabu = $(this).children('option:contains(全部)').val();
+            if(_clickText === '全部' && status === true){
+                $(this).selectpicker('val',['']);
+                $(this).selectpicker('refresh');
+            }else{
+                var flag = $(this).val().some(function(val){
+                    return val === noTabu
+                })
+                if(flag){
+                    $(this).selectpicker('val',_clickVal);
+                    $(this).selectpicker('refresh');
+                }
+            }
+        });
+        $('#exportPhotoRequire').on('changed.bs.select', function (ele,index,status) {
+            var _clickText = $(this).children('option').eq(index).text();
+            var _clickVal = $(this).children('option').eq(index).val();
+            var noTabu = $(this).children('option:contains(全部)').val();
+            if(_clickText === '全部' && status === true){
+                $(this).selectpicker('val',['']);
+                $(this).selectpicker('refresh');
+            }else{
+                var flag = $(this).val().some(function(val){
+                    return val === noTabu
+                })
+                if(flag){
+                    $(this).selectpicker('val',_clickVal);
+                    $(this).selectpicker('refresh');
+                }
+            }
+        });
+
+
+        function setTabHig() {
+            var hight1 = $('.content-header').get(0).offsetHeight
+            var hight2 = $('.btn-new').get(0).offsetHeight
+            var hight3 = $('.box-default-new').get(0).offsetHeight
+            var hight4 = $('.box-header-new').get(0).offsetHeight
+
+            /*动态设置高度*/
+            var tableWar = (($(".content-wrapper").css('min-height')).split('p'))[0]
+            var actualHeight = tableWar - hight1 - hight2 - hight3 - 30
+            $(".content_box").css({
+                'height': actualHeight + 25 + 'px'
+            })
+
+            $('#example1_wrapper .dataTables_scrollBody').css({
+                'height': actualHeight - 70 + 'px'
+            })
+            $('.DTFC_ScrollWrapper').css({
+                'height': actualHeight - 10 + 'px'
+            })
+        }
+
+        window.onresize = function() {
+            setTabHig()
+        }
+
+        /*table菜单朝向问题*/
+        $("#example1").on('click', '.down-btn', function(e) {
+            var ulHeight = $(this).next().height();
+            var spanHeight = $(this).offset().top
+            var tableHeight = $(".dataTables_scroll").offset().top
+            var leng = spanHeight - tableHeight
+            if (leng > (ulHeight + 45)) {
+                $(this).parent().addClass('dropup')
+            }
+        });
+
+        /*被踢点位清除*/
+        $('#clear_reason').on('click', function() {
+            cc = Ewin.confirm({
+                'message': '确定清除点位?'
+            }).on(function(e) {
+                if (e) {
+
+                    $("body").mLoading({
+                        text: '清除中'
+                    });
+                    $.get("{:Url('Ledplan/clearSetpoint')}", {
+                        id: $("#btId").val()
+                    }, function(data) {
+                        if (data.code == 0) {
+                            toastr.error(data.msg)
+                        } else {
+                            toastr.success(data.msg);
+                            $("#beiti").modal('hide')
+                        }
+                        $('#example1').DataTable().draw(false);
+                        $("body").mLoading('hide');
+                    }, 'json');
+                }
+            })
+        })
+        /*重置事件*/
+
+        $("#reastData").click(function(event) {
+            $("body").mLoading({
+                text: '数据正在加载中'
+            });
+            $("#serachOrderId").val('');
+            $("#searchPlanName").val('');
+            $("#searchPlanTime").val('{$date}');
+            //隐藏域赋值
+            $('#change_data').val('11');
+            $('#searchPlanStatus').select2("val", [""]);
+            $('#searchPlanUser').select2("val", [""]);
+            $('#searchPlanType').select2("val", ["004"]);
+            $('#addSaleUser_search').select2("val", ["004"]);
+            $('#addPhotoRequire_search').select2('val', ['']);
+            $('#searchCreateMan').selectpicker('val',['']);
+
+            setTimeout(function() {
+                var table = $('#example1').DataTable();
+                table.draw(true);
+                $("body").mLoading('hide');
+                //隐藏域空值
+                $('#change_data').val('');
+            }, 500)
+        });
+
+        /*下拉查询*/
+        $(".seachTable").off('change').on('change', changeFun);
+
+        function changeFun() {
+            if($('#change_data').val() == '11'){
+                return false;
+            }
+            $('#change_data').val('');
+            if ($("#searchPlanTime").val() != '') {
+                $("body").mLoading({
+                    text: '数据正在加载中'
+                });
+
+                setTimeout(function() {
+                    var table = $('#example1').DataTable();
+                    table.draw(true);
+                    $("body").mLoading('hide');
+                }, 500)
+            }
+        }
+
+
+        $("#export_reason").click(function() {
+            try {
+                if (!checkAuth("Ledplan/exportreason")) {
+                    return false;
+                }
+                var url = "{:url('ledplan/exportReason')}";
+                let planId = $('#btId').val();
+                $("body").mLoading({
+                    text: '导出中'
+                });
+                var a = document.createElement("a");
+                a.href = url + "?planId=" + planId;
+                a.click();
+                setTimeout(function() {
+                    $("body").mLoading("hide");
+                }, 5000);
+            } catch (e) {
+                let msg = typeof(e) == "Object" ? JSON.stringify(e) : e;
+                toastr.error(msg);
+            }
+        });
+
+        /*点位导出*/
+        $("#export_point").click(function() {
+            $("#porit").on('shown.bs.modal', function() {
+                $("#export_addTrade").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#export_addCity").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#export_addSeconds").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#export_addNumbers").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#export_addType").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#export_endTime").css({
+                    'background': '#fff3f3'
+                })
+                $("#export_startTime").css({
+                    'background': '#fff3f3'
+                })
+            })
+            $("#porit").modal('show')
+        });
+
+        /*导出*/
+        $("#export_fun").click(function() {
+            try {
+                if (!checkAuth("Ledplan/exportplansexcel")) {
+                    return false;
+                }
+
+                var url = "{:url('ledplan/exportPlansExcel')}";
+
+                if ($('#export_startTime').val() == "") {
+                    toastr.error('投放开始时间不能为空');
+                    return false;
+                }
+                if ($('#export_endTime').val() == "") {
+                    toastr.error('投放结束时间不能为空');
+                    return false;
+                }
+                if ($('#export_addTrade').val() == "") {
+                    toastr.error('投放行业不能为空');
+                    return false;
+                }
+                if ($('#export_addCity').val() == "") {
+                    toastr.error('投放城市不能为空');
+                    return false;
+                }
+                if ($('#export_addSeconds').val() == "") {
+                    toastr.error('广告时长不能为空');
+                    return false;
+                }
+                if ($('#export_addNumbers').val() == "") {
+                    toastr.error('投放频次不能为空');
+                    return false;
+                }
+                if ($('#export_addType').val() == "") {
+                    toastr.error('屏幕类型不能为空');
+                    return false;
+                }
+                let param = {
+                    export_startTime: $("#export_startTime").val(),
+                    /*投放开始时间*/
+                    export_endTime: $("#export_endTime").val(),
+                    /*投放结束时间*/
+                    export_addTrade: $('#export_addTrade').val(),
+                    /*投放行业*/
+                    export_addCity: $('#export_addCity').val(),
+                    /*投放城市*/
+                    export_addSeconds: $('#export_addSeconds').val(),
+                    /*广告时长*/
+                    export_addNumbers: $('#export_addNumbers').val(),
+                    /*投放频次*/
+                    export_addType: $('#export_addType').val(),
+                    /*屏幕类型*/
+                    //					export_addContinuation: $('#export_addContinuation').val(),
+                    /*行业不连续*/
+                    //					export_addMoreTwo: $('#export_addMoreTwo').val() /*同行业不超过两个*/
+                };
+                param = JSON.stringify(param);
+
+                $("body").mLoading({
+                    text: '导出中'
+                });
+                $.get(url, {
+                    params: param
+                }, function(data) {
+                    if (data.code == 0) {
+
+                        toastr.error(data.msg);
+                    } else {
+                        window.location.href = data.url;
+                    }
+                    $("body").mLoading("hide");
+                    clearFun()
+                }, 'json');
+
+            } catch (e) {
+                let msg = typeof(e) == "Object" ? JSON.stringify(e) : e;
+                toastr.error(msg);
+            }
+        });
+
+        $('#export_addContinuation').click(function() {
+            if ($(this).val() == 0) {
+                $(this).val(1);
+            } else {
+                $(this).val(0);
+            }
+        });
+        $('#export_addMoreTwo').click(function() {
+            if ($(this).val() == 0) {
+                $(this).val(1);
+            } else {
+                $(this).val(0);
+            }
+        });
+
+        $('#porit').on('hidden.bs.modal', function() {
+            clearFun()
+        });
+
+        /*清空表格*/
+        function clearFun() {
+            $('#export_startTime').val("{$date}");
+            $('#export_endTime').val("");
+            /*结束时间*/
+            $('#export_addTrade').select2("val", [""]);
+            /*投放行业*/
+            $('#export_addCity').select2("val", [""]);
+            /*投放城市*/
+            $('#export_addSeconds').select2("val", [""]);
+            /*广告时长*/
+            $('#export_addNumbers').select2("val", [""]);
+            /*投放频次*/
+            $('#export_addType').select2("val", [""]);
+            /*屏幕类型*/
+
+            $('#export_addContinuation').prop({
+                'checked': false,
+                'value': 0
+            });
+            $('#export_addMoreTwo').prop({
+                'checked': false,
+                'value': 0
+            });
+        }
+
+        $('.sidebar-toggle').on('click', function() {
+            $('.sidebar-mini').hasClass('sidebar-collapse') ? $('.sidebar-mini').removeClass(
+                'sidebar-collapse') : $('.sidebar-mini').addClass('sidebar-collapse');
+        })
+
+        $('.select2').select2()
+
+
+        $('#searchPlanTime').datepicker({
+            autoclose: true,
+            origin: "left",
+        }).on("hide", function() {
+            if ($("#searchPlanTime").val() != '') {
+                $("body").mLoading({
+                    text: '数据加载中'
+                });
+                setTimeout(() => {
+                    $('#example1').DataTable().clear();
+                    var table = $('#example1').DataTable();
+                    table.draw(true);
+                    $("body").mLoading('hide');
+                }, 500);
+            }
+        }).on('show', function() {
+            var childrenTd = ((document.getElementsByClassName('datepicker-days'))[0].children)[0].children[
+                1].children;
+            for (var i = 0; i < 6; i++) {
+                for (var j = 0; j < 7; j++) {
+                    if (((childrenTd[i]).children)[j].getAttribute('class') != 'old disabled day' && ((
+                        childrenTd[i]).children)[j].getAttribute('class') != 'disabled day') {
+                        if (j == 6 || j == 0) {
+                            ((childrenTd[i]).children)[j].setAttribute("class", 'disabled_day day')
+                        }
+                    }
+                }
+            }
+        })
+
+        $('#changeDateTime').datepicker({
+            autoclose: true
+        })
+
+        $("#excludeTime").focus(function() {
+            $("#excludeTime").datepicker({
+                autoclose: true,
+                endDate: $('#excludeEndTime').val()
+            }).on("hide", function() {
+                $('#excludeTime').datepicker('destroy')
+            })
+            $('#excludeTime').datepicker('show')
+        })
+        $("#excludeEndTime").focus(function() {
+            $("#excludeEndTime").datepicker({
+                autoclose: true,
+                startDate: $('#excludeTime').val()
+            }).on("hide", function() {
+                $('#excludeEndTime').datepicker('destroy')
+            })
+            $('#excludeEndTime').datepicker('show')
+        })
+
+
+        /*开始时间要小于结束时间一年以内*/
+        $('#addBeginTime').focus(function() {
+            var saveBeginYear = parseInt(($('#addBeginTime').val()).substring(6)) + 1 //年份四位数
+            var saveBeginMounth = ($('#addBeginTime').val()).substring(0, 6) //月份和日子
+            $('#addBeginTime').datepicker({
+                autoclose: true,
+                startDate: new Date(),
+                endDate: saveBeginMounth + saveBeginYear,
+            }).on('hide', function() {
+                if ($("#addBeginTime").val() && $('#addEndTime').val()) {
+                    var beDd = $('#addBeginTime').val().substring(3, 5);
+                    var beMm = $('#addBeginTime').val().substring(0, 2);
+                    var beYy = $('#addBeginTime').val().substring(6)
+                    var beTime = beYy + '-' + beMm + '-' + beDd;
+                    var enDd = $('#addEndTime').val().substring(3, 5);
+                    var enMm = $('#addEndTime').val().substring(0, 2);
+                    var enYy = $('#addEndTime').val().substring(6);
+                    var enTime = enYy + '-' + enMm + '-' + enDd;
+                    $("#differ_days").text(datedifference(beTime, enTime) + '天')
+                } else {
+                    $("#differ_days").text(0 + '天')
+                }
+                $('#addBeginTime').datepicker('destroy')
+            });
+            $('#addBeginTime').datepicker('show')
+            var childrenTd = ((document.getElementsByClassName('datepicker-days'))[0].children)[0].children[
+                1].children;
+            for (var i = 0; i < 6; i++) {
+                for (var j = 0; j < 7; j++) {
+                    if (((childrenTd[i]).children)[j].getAttribute('class') != 'old disabled day' && ((
+                        childrenTd[i]).children)[j].getAttribute('class') != 'disabled day') {
+                        if (j == 6 || j == 0) {
+                            ((childrenTd[i]).children)[j].setAttribute("class", 'disabled_day day')
+                        }
+                    }
+                }
+            }
+        })
+
+        /*结束时间应该在开始时间之后*/
+        $('#addEndTime').focus(function() {
+            var startDate = $("#addBeginTime").val();
+            $('#addEndTime').datepicker({
+                autoclose: true,
+                startDate: startDate,
+            }).on('hide', function() {
+                if ($("#addBeginTime").val() && $('#addEndTime').val()) {
+                    var beDd = startDate.substring(3, 5);
+                    var beMm = startDate.substring(0, 2);
+                    var beYy = startDate.substring(6)
+                    var beTime = beYy + '-' + beMm + '-' + beDd;
+                    var enDd = $('#addEndTime').val().substring(3, 5);
+                    var enMm = $('#addEndTime').val().substring(0, 2);
+                    var enYy = $('#addEndTime').val().substring(6);
+                    var enTime = enYy + '-' + enMm + '-' + enDd;
+                    $("#differ_days").text(datedifference(beTime, enTime) + '天')
+                } else {
+                    $("#differ_days").text(0 + '天')
+                }
+
+                $('#addEndTime').datepicker('destroy')
+            });
+            $('#addEndTime').datepicker('show')
+            var childrenTd = ((document.getElementsByClassName('datepicker-days'))[0].children)[0].children[
+                1].children;
+            for (var i = 0; i < 6; i++) {
+                for (var j = 0; j < 7; j++) {
+                    if (((childrenTd[i]).children)[j].getAttribute('class') != 'old disabled day' && ((
+                        childrenTd[i]).children)[j].getAttribute('class') != 'disabled day') {
+                        if (j == 6 || j == 0) {
+                            ((childrenTd[i]).children)[j].setAttribute("class", 'disabled_day day')
+                        }
+                    }
+                }
+            }
+        });
+
+        function datedifference(sDate1, sDate2) {
+            var dateSpan,
+                tempDate,
+                iDays;
+            sDate1 = Date.parse(sDate1);
+            sDate2 = Date.parse(sDate2);
+            dateSpan = sDate2 - sDate1;
+            dateSpan = Math.abs(dateSpan);
+            iDays = Math.floor(dateSpan / (24 * 3600 * 1000));
+            return iDays + 1
+        };
+
+        /*上刊单价必须大于等于0*/
+        $("#addSinglePrice").on('keyup', function() {
+            if (parseFloat($("#addSinglePrice").val()).toString() == 'NaN') {
+                $("#addSinglePrice").val('')
+            } else if ($("#addSinglePrice").val() < 0) {
+                $("#addSinglePrice").val('')
+                toastr.error('上刊单价必须大于等于0元')
+            }
+        });
+
+        /*制作费必须大于等于0*/
+        $("#addProductPrice").on('keyup', function() {
+            if (parseFloat($("#addProductPrice").val()).toString() == 'NaN') {
+                $("#addProductPrice").val('')
+            } else if ($("#addProductPrice").val() < 0) {
+                $("#addProductPrice").val('')
+                toastr.error('制作费必须大于等于0元')
+            }
+        });
+        /*导出的*/
+        /*开始时间要小于结束时间一年以内*/
+        $('#export_startTime').focus(function() {
+            var saveBeginYear = parseInt(($('#export_startTime').val()).substring(6)) + 1 //年份四位数
+            var saveBeginMounth = ($('#export_startTime').val()).substring(0, 6) //月份和日子
+            $('#export_startTime').datepicker({
+                autoclose: true,
+                endDate: saveBeginMounth + saveBeginYear,
+            }).on('hide', function() {
+                $('#export_startTime').datepicker('destroy')
+            });
+            $('#export_startTime').datepicker('show')
+        })
+        /*结束时间应该在开始时间之后*/
+        $('#export_endTime').focus(function() {
+            var startDate = $("#export_startTime").val();
+            $('#export_endTime').datepicker({
+                autoclose: true,
+                startDate: startDate,
+            }).on('hide', function() {
+                $('#export_endTime').datepicker('destroy')
+            });
+            $('#export_endTime').datepicker('show')
+        })
+
+        serachData();
+
+        $('#addExclude').on('hidden.bs.modal', function() {
+            $('#excludePlanId').val('');
+            $('#excludePlanName').val('');
+            $('#excludeTime').val('');
+            $("#excludeEndTime").val('')
+
+            $('#example1').DataTable().draw();
+            $('#example2').DataTable().draw();
+            $('#example3').DataTable().draw();
+
+            $('#example2 tbody').on('click', 'tr', function(row) {
+                $(this).toggleClass('selected');
+            });
+
+            $('#example3 tbody').on('click', 'tr', function(row) {
+                $(this).toggleClass('selected');
+            });
+        })
+        $(".chice_all").on('click', function() {
+            if ($('#example2 tbody').find('tr').text() != '无数据') {
+                $('#example2 tbody').find('tr').toggleClass('selected');
+            }
+        });
+        $(".chice_all_right").on('click', function() {
+            if ($('#example3 tbody').find('tr').text() != '无数据') {
+                $('#example3 tbody').find('tr').toggleClass('selected');
+            }
+        });
+        $('#addPlan').on('hidden.bs.modal', function() {
+            $("#addCompactNum").val('');
+            $("#addRegulateNum").val('');
+            $('#addSaleUser').select2("val", [""]);
+            $('#addOrder').select2("val", [""]);
+            $('#addName').val("");
+            $('#addBeginTime').val("{$date}");
+            $('#addEndTime').val("");
+            $('#remark').val("");
+            $('#addTrade').select2("val", [""]);
+            $('#addSaleType').select2("val", [""]);
+            $('#addSinglePrice').val("");
+            $('#addProductPrice').val("");
+            $('#addCity').select2("val", [""]);
+            $('#addSeconds').select2("val", [""]);
+            $('#addNumbers').select2("val", [""]);
+            $('#addType').select2("val", [""]);
+            $('#addDeliveryMode').select2("val", [""]);
+            $('#addPhotoRequire').select2("val", [""]);
+            $('#addPhotoPack').select2("val", [""]);
+            $('#addPhotoReport').select2("val", [""]);
+            $('#addPhotoDown').select2("val", [""]);
+            $('#addPhotoUp').select2("val", [""]);
+            $("#differ_days").text('0天')
+            $('#addContinuation').prop({
+                'checked': false,
+                'value': 0
+            });
+            $('#addMoreTwo').prop({
+                'checked': false,
+                'value': 0
+            });
+            $('#addWholeNetwork').prop({
+                'checked': false,
+                'value': 0
+            });
+            $('#planId').val("");
+            $('.addOrder').val("");
+            $('#addSaleUser').attr('disabled', false);
+            $('#addOrder').attr('disabled', false);
+            $('#addBeginTime').attr('disabled', false);
+            $('#addEndTime').attr('disabled', false);
+            $('#addCity').attr('disabled', false);
+            $('#addType').attr('disabled', false);
+            $('#addTrade').attr('disabled', false);
+            $('#addSeconds').attr('disabled', false);
+            $('#addNumbers').attr('disabled', false);
+            $('#addDeliveryMode').attr('disabled', false);
+            $('#addContinuation').attr('disabled', false);
+            $('#addMoreTwo').attr('disabled', false);
+            $('#addWholeNetwork').attr('disabled', false);
+        })
+
+
+
+        //业务员下拉框选择后改变订单
+        $('#addSaleUser').change(function() {
+            userId = $(this).val();
+            $.getJSON("{:Url('Ledplan/getOrderById')}", {
+                userId: userId
+            }, function(data) {
+                if (data.code == 0) {
+                    window.location.href = data.msg;
+                } else {
+                    $('#addOrder').empty();
+                    for (var i = 0, l = data.length; i < l; i++) {
+                        $('#addOrder').append('<option value=' + data[i].id + '>' + data[i].orderNum +
+                            '-' + data[i].name + '</option>');
+                    }
+                    if ($('.addOrder').val()) {
+                        $('#addOrder').select2('val', [$('.addOrder').val()]);
+                    }
+                }
+            }, 'json');
+        });
+    })
+    $('#addContinuation').click(function() {
+        if ($(this).val() == 0) {
+            $(this).val(1);
+        } else {
+            $(this).val(0);
+        }
+    });
+
+    $('#addPhotoRequire').change(function() {
+        if ($(this).val() == '001') {
+            $('#addPhotoReport').select2("val", ['001']);
+            $('#addPhotoPack').select2("val", ['002']);
+            $('#addPhotoUp').select2("val", ['002']);
+            $('#addPhotoDown').select2("val", ['002']);
+            $('#addPhotoReport').attr('disabled', true);
+            $('#addPhotoPack').attr('disabled', true);
+            $('#addPhotoUp').attr('disabled', true);
+            $('#addPhotoDown').attr('disabled', true);
+        } else {
+            $('#addPhotoReport').attr('disabled', false);
+            $('#addPhotoPack').attr('disabled', false);
+            $('#addPhotoUp').attr('disabled', false);
+            $('#addPhotoDown').attr('disabled', false);
+        }
+
+    })
+
+    $('#addContinuation').click(function() {
+        if ($(this).val() == 0) {
+            $(this).val(1);
+        } else {
+            $(this).val(0);
+        }
+    });
+    $('#addWholeNetwork').click(function() {
+        if ($(this).val() == 0) {
+            $(this).val(1);
+        } else {
+            $(this).val(0);
+        }
+    });
+    //查看权限
+    var hide = false //默认隐藏
+    if (onlyCheckAuth("Ledplan/lookprice")) {
+        $('#singlePrice').css('display', 'block')
+        $('#productPrice').css('display', 'block')
+        //        $('#compactNum').css('display', 'block')
+        //        $('#regulateNum').css('display', 'block')
+        $('#addSinglePrice').attr('disabled', true)
+        $('#addProductPrice').attr('disabled', true)
+        //        $('#addCompactNum').attr('disabled', true)
+        //        $('#addRegulateNum').attr('disabled', true)
+        $('#export-auth').val("Ledplan/lookprice")
+        var hide = true
+    }
+    //编辑权限
+    if (onlyCheckAuth("Ledplan/updateprice")) {
+        $('#singlePrice').css('display', 'block')
+        $('#productPrice').css('display', 'block')
+        //        $('#compactNum').css('display', 'block')
+        //        $('#regulateNum').css('display', 'block')
+        $('#addSinglePrice').attr('disabled', false)
+        $('#addProductPrice').attr('disabled', false)
+        //        $('#addCompactNum').attr('disabled', false)
+        //        $('#addRegulateNum').attr('disabled', false)
+    }
+    $('#example1').DataTable({
+        "fnRowCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+            status = aData.status;
+            if (status == '002') {
+
+                $(nRow).css("background", "#f6a0a0");
+                // $(nRow).css("background", "#f6c3c3");
+            } else if (status == '003') {
+
+                $(nRow).css("background", "#9ab5e1");
+
+                // $(nRow).css("background", "#9bbaec");
+            }
+        },
+        "drawcallback": function() {},
+        "processing": true,
+        "ordering": false,
+        "autoWidth": false,
+        'searching': false,
+        'fixedColumns': true,
+        'scrollX': true,
+        "columnDefs": [{
+            "targets": 0,
+            'title': "操作",
+            'width': '160px',
+            'render': function(data, type, row, meta) {
+
+                if($('#onlyDeleted').is(':checked')==true) {
+                    return '<div class="col-lg-3 col-xs-6" style="width:42%"><button type="button" class="btn btn-sm btn-block btn-danger" onclick="lookPlan(' +
+                        row.id +
+                        ')">查看</button></div><div class="col-lg-3 col-xs-6 menuWrapper" style="width:58%">' +
+                        '<span class="btn-group" >' +
+                        '<button type="button" class="btn btn-danger btn-sm operate">操作</button><button type="button" class="btn btn-danger dropdown-toggle btn-sm down-btn" data-toggle="dropdown"><span class="caret"></span><span class="sr-only" >Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu" ><li><a onclick="EditDelete(\'' +
+                        row.id + '\',\''+row.name+'\')">编辑</a></li><li class="divider"></li>'+
+                        '<li><a onclick="reStore(' + row.id + ')">恢复</a></li><li class="divider"></li><li><a onclick="exportDeleteMap('+row.id +
+                        ')">点位导出</a></li>'+
+                        '<li class="divider"></li></ul></span></div>';
+                } else if (row.status == '001') {
+                    return '<div class="col-lg-3 col-xs-6" style="width:42%"><button type="button" class="btn btn-sm btn-block btn-danger" onclick="lookPlan(' +
+                        row.id +
+                        ')">查看</button></div><div class="col-lg-3 col-xs-6 menuWrapper" style="width:58%">' +
+                        '<span class="btn-group" >' +
+                        '<button type="button" class="btn btn-danger btn-sm operate">操作</button><button type="button" class="btn btn-danger dropdown-toggle btn-sm down-btn" data-toggle="dropdown"><span class="caret"></span><span class="sr-only" >Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu" ><li><a onclick="editPlan(' +
+                        row.id + ')">编辑</a></li><li class="divider"></li>' +
+                        '<li><a onclick="delPlan(' + row.id + ')">删除方案</a></li><li class="divider"></li>' +
+                        '<li><a onclick="editSaleOrOrderId(' + row.id + ')">编辑人员/合同</a></li><li class="divider"></li>' +
+                        '<li><a onclick="manage(' +
+                        row.id +
+                        ')">点位调度</a></li><li class="divider"></li><li><a onclick="addExclude(' +
+                        row.id +
+                        ')">方案排斥</a></li><li class="divider"></li><li><a onclick="sendCustomer(' +
+                        row.id +
+                        ')">发送确认</a></li><li class="divider"></li><li><a onclick="exportExcel(' +
+                        row.id +
+                        ')">点位导出</a></li><li class="divider"></li><li><a onclick="exportMap(' + row
+                            .id +
+                        ')">地图导出</a></li><li class="divider"></li><li><a onclick="changeDate(' +
+                        row.id + ')">调整结束日</a></li><li><a onclick="splitPlan(' + row.id +
+                        ')">方案拆解</a></li> <li><a onclick="copyPlan('+row.id+')">复制此方案</a></li> </ul></span></div>';
+
+                } else if (row.status == '002' && row.examine == '002') {
+                    return '<div class="col-lg-3 col-xs-6" style="width:42%"><button type="button" class="btn btn-sm btn-block btn-danger" onclick="lookPlan(' +
+                        row.id +
+                        ')">查看</button></div><div class="col-lg-3 col-xs-6 menuWrapper" style="width:58%"><span class="btn-group" ><button type="button" class="btn btn-danger btn-sm operate">操作</button><button type="button" class="btn btn-danger dropdown-toggle btn-sm down-btn" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu"><li><a onclick="editPlan(' +
+                        row.id +
+                        ')">编辑</a></li><li class="divider"></li>' +
+                        '<li><a onclick="editSaleOrOrderId(' + row.id + ')">编辑人员/合同</a></li><li class="divider"></li>' +
+                        '<li><a onclick="cancelStatus(' +
+                        row.id +
+                        ')">撤销</a></li><li class="divider"></li><li><a onclick="cusConfirm(' + row.id +
+                        ')">手动确认</a></li><li class="divider"></li><li><a onclick="exportExcel(' +
+                        row.id +
+                        ')">点位导出</a></li><li class="divider"></li><li><a onclick="exportMap(' + row.id + ')">地图导出</a></li><li class="divider"></li><li><a onclick="changeDate(' + row.id + ')">调整结束日</a></li><li><a onclick="copyPlan('+row.id+')">复制此方案</a></li></ul></span></div>';
+                    } else if (row.status == '002' && (row.examine == '003' || row.examine == '006')) {
+                        return '<div class="col-lg-3 col-xs-6" style="width:42%"><button type="button" class="btn btn-sm btn-block btn-danger" onclick="lookPlan(' +
+                            row.id +
+                            ')">查看</button></div><div class="col-lg-3 col-xs-6 menuWrapper" style="width:58%"><span class="btn-group" ><button type="button" class="btn btn-danger btn-sm operate" >操作</button><button type="button" class="btn btn-danger dropdown-toggle btn-sm down-btn" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu"><li><a onclick="editPlan(' +
+                            row.id +
+                            ')">编辑</a></li><li class="divider"></li>' +
+                            '<li><a onclick="editSaleOrOrderId(' + row.id + ')">编辑人员/合同</a></li><li class="divider"></li>' +
+                            '<li><a onclick="cancelStatus(' +
+                            row.id +
+                            ')">撤销</a></li><li class="divider"></li><li><a onclick="exportExcel(' + row.id +
+                        ')">点位导出</a></li><li class="divider"></li><li><a onclick="exportMap(' + row.id +
+                        ')">地图导出</a></li><li class="divider"></li><li><a onclick="changeDate(' + row.id +
+                        ')">调整结束日</a></li><li class="divider"></li><li><a onclick="submitExamine(' + row.id + ')">提交审批</a></li><li><a onclick="copyPlan('+row.id+')">复制此方案</a></li> </ul></span></div>';
+
+                } else if (row.status == '003' && row.examine == '007') {
+                    // return '<div class="col-lg-3 col-xs-6" style="width:40%"><button type="button" class="btn btn-sm btn-block btn-danger" onclick="lookPlan('+row.id+')">查看</button></div><div class="col-lg-3 col-xs-6 menuWrapper" style="width:60%"><span class="btn-group" ><button type="button" class="btn btn-danger btn-sm operate">操作</button><button type="button" class="btn btn-danger dropdown-toggle btn-sm" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu"><li><a onclick="editPlan('+row.id+')">编辑</a></li><li class="divider"></li><li><a onclick="cancelStatus('+row.id+')">撤销</a></li><li class="divider"></li><li><a onclick="exportExcel('+row.id+')">点位导出</a></li><li class="divider"></li><li><a onclick="exportMap('+row.id+')">地图导出</a></li><li class="divider"></li><li><a onclick="changeDate('+row.id+')">调整结束日</a><li class="divider"></li><li><a onclick="sendCustomer('+row.id+')">发送确认</a></li><li class="divider"></li><li><a onclick="splitPlan('+row.id+')">方案拆解</a></li></ul></span></div>';
+                    //銷售狀態下沒有發送確認 by hcp
+                    return '<div class="col-lg-3 col-xs-6" style="width:42%"><button type="button" class="btn btn-sm btn-block btn-danger" onclick="lookPlan(' +
+                        row.id +
+                        ')">查看</button></div><div class="col-lg-3 col-xs-6 menuWrapper" style="width:58%"><span class="btn-group" ><button type="button" class="btn btn-danger btn-sm operate">操作</button><button type="button" class="btn btn-danger dropdown-toggle btn-sm down-btn" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu"><li><a onclick="editPlan(' +
+
+                        row.id +
+                        ')">编辑</a></li><li class="divider"></li>' +
+                        '<li><a onclick="editSaleOrOrderId(' + row.id + ')">编辑人员/合同</a></li><li class="divider"></li>' +
+                        '<li><a onclick="cancelStatus(' +
+                        row.id +
+                        ')">撤销</a></li><li class="divider"></li><li><a onclick="exportExcel(' + row
+                            .id +
+                        ')">点位导出</a></li><li class="divider"></li><li><a onclick="exportMap(' + row
+                            .id +
+                        ')">地图导出</a></li><li class="divider"></li><li><a onclick="changeDate(' +
+                        row.id +
+                        ')">调整结束日</a><li class="divider"></li><li><a onclick="splitPlan(' + row.id +
+                        ')">方案拆解</a></li><li><a onclick="copyPlan('+row.id+')">复制此方案</a></li> </ul></span></div>';
+                } else if (row.status == '002' && row.examine == '005') {
+                    // return '<div class="col-lg-3 col-xs-6" style="width:40%"><button type="button" class="btn btn-sm btn-block btn-danger" onclick="lookPlan('+row.id+')">查看</button></div><div class="col-lg-3 col-xs-6 menuWrapper" style="width:60%"><span class="btn-group" ><button type="button" class="btn btn-danger btn-sm operate">操作</button><button type="button" class="btn btn-danger dropdown-toggle btn-sm" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu"><li><a onclick="editPlan('+row.id+')">编辑</a></li><li class="divider"></li><li><a onclick="cancelStatus('+row.id+')">撤销</a></li><li class="divider"></li><li><a onclick="exportExcel('+row.id+')">点位导出</a></li><li class="divider"></li><li><a onclick="exportMap('+row.id+')">地图导出</a></li><li class="divider"></li><li><a onclick="changeDate('+row.id+')">调整结束日</a><li class="divider"></li><li><a onclick="sendCustomer('+row.id+')">发送确认</a></li><li class="divider"></li><li><a onclick="splitPlan('+row.id+')">方案拆解</a></li></ul></span></div>';
+                    //銷售狀態下沒有發送確認 by hcp
+                    return '<div class="col-lg-3 col-xs-6" style="width:42%"><button type="button" class="btn btn-sm btn-block btn-danger" onclick="lookPlan(' +
+                        row.id +
+                        ')">查看</button></div><div class="col-lg-3 col-xs-6 menuWrapper" style="width:58%"><span class="btn-group" ><button type="button" class="btn btn-danger btn-sm operate " >操作</button><button type="button" class="btn btn-danger dropdown-toggle btn-sm down-btn" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu" role="menu"><li class="divider"></li><li><a onclick="exportExcel(' +
+                        row.id +
+                        ')">点位导出</a></li><li class="divider"></li>' +
+                        '<li><a onclick="editSaleOrOrderId(' + row.id + ')">编辑人员/合同</a></li><li class="divider"></li>' +
+                        '<li><a onclick="exportMap(' + row
+                            .id + ')">地图导出</a></li><li><a onclick="copyPlan('+row.id+')">复制此方案</a></li> </ul></span></div>';
+                }}
+
+
+        }, {
+            "targets": 1,
+            'title': "方案名称",
+            'data': 'name',
+            'width': '100px'
+        }, {
+            "targets": 2,
+            'title': "状态",
+            'data': 'statusName',
+            'width': '30px'
+        }, {
+            "targets": 3,
+            'title': "流程",
+            'data': 'examineName',
+            'width': '50px'
+        }, {
+            "targets": 4,
+            'title': "行业",
+            'data': 'trade',
+            'width': '50px'
+        }, {
+            "targets": 5,
+            'title': "开始时间",
+            'data': 'beginTime',
+            'width': '60px'
+        }, {
+            "targets": 6,
+            'title': "结束时间",
+            'data': 'time',
+            'width': '60px'
+        },{
+            "targets": 7,
+            'title': "类型",
+            'data': 'type',
+            'width': '30px'
+        }, {
+            "targets": 8,
+            'title': "方式",
+            'data': 'deliveryName',
+            'width': '30px'
+        }, {
+            "targets": 9,
+            'title': "时长",
+            'data': 'seconds',
+            'width': '30px'
+        }, {
+            "targets": 10,
+            'title': "频次",
+            'data': 'numbers',
+            'width': '40px'
+        },{
+            "targets": 11,
+            'title': "需求",
+            'data': 'needNum',
+            'width': '40px',
+            //            "visible": hide
+        },{
+            "targets": 12,
+            'title': "合同",
+            'data': 'compactNum',
+            'width': '40px',
+            //            "visible": hide
+        }, {
+            "targets": 13,
+            'title': "调剂",
+            'data': 'regulateNum',
+            'width': '40px',
+            //            "visible": hide
+        }, {
+            "targets": 14,
+            'title': "点位",
+            'data': 'counts',
+            'width': '40px'
+        }, {
+            "targets": 15,
+            'title': "被踢",
+            'data': 'btCounts',
+            'width': '30px',
+            'render': function(data, type, row, meta) {
+                if (row.btCounts != 0) {
+                    if($('#onlyDeleted').is(':checked')==true) {
+                        return '<a href="javascript:void(0)" style="color:red;font-weight:bold;text-decoration:underline;"  onclick="lookDeleteBtReason(' + (row.id) +
+                            ')">' + (row.btCounts) + '</a>';
+                    }else{
+                        return '<a href="javascript:void(0)" style="color:red;font-weight:bold;text-decoration:underline;"  onclick="lookBtReason(' + (row.id) +
+                            ')">' + (row.btCounts) + '</a>';
+                    }
+
+
+                } else {
+                    return row.btCounts;
+                }
+            }
+        }, {
+            "targets": 16,
+            'title': "销售方式",
+            'data': 'saleType',
+            'width': '60px'
+        },
+            // {  "targets": 12, 'title': "城市", 'data': 'city'   },
+            {
+                "targets": 17,
+                'title': "业务人员",
+                'data': 'saleUser',
+                'width': '100px'
+            }, {
+                "targets": 18,
+                'title': "不连续",
+                'data': 'continuation',
+                'width': '80px'
+            }, {
+                "targets": 19,
+                'title': "不超过两个",
+                'data': 'moreTwo',
+                'width': '80px'
+            }, {
+                "targets": 20,
+                'title': "拍照要求",
+                'data': 'photoRequire',
+                'width': '60px'
+            }, {
+                "targets": 21,
+                'title': "照片打包",
+                'data': 'photoPack',
+                'width': '60px'
+            }, {
+                "targets": 22,
+                'title': "拍照方式",
+                'data': 'photoReport',
+                'width': '60px'
+            }, {
+                "targets": 23,
+                'title': "上刊带报",
+                'data': 'photoUp',
+                'width': '60px'
+            }, {
+                "targets": 24,
+                'title': "下刊带报",
+                'data': 'photoDown',
+                'width': '60px'
+            },  {
+                "targets": 25,
+                'title': "创建时间",
+                'data': 'createTime',
+                'width': '60px'
+            }, {
+                "targets": 26,
+                'title': "创建人",
+                'data': 'createMan',
+                'width': '50px'
+            }, {
+                "targets": 27,
+                'title': "更新时间",
+                'data': 'upTime',
+                'width': '60px'
+            }, {
+                "targets": 28,
+                'title': "更新人",
+                'data': 'upMan',
+                'width': '50px'
+            },{
+                "targets": 29,
+                'title': "方案编号",
+                'data': 'planSn',
+                'width': '70px'
+            }, {
+                "targets": 30,
+                'title': "合同编号",
+                'data': 'orderSn',
+                'width': '70px'
+            },{
+                "targets": 31,
+                'title': "上刊单价",
+                'data': 'singlePrice',
+                'width': '60px',
+                "visible": hide
+            }, {
+                "targets": 32,
+                'title': "制作费",
+                'data': 'productPrice',
+                'width': '40px',
+                "visible": hide
+            }, {
+                "targets": 33,
+                'title': "备注",
+                'data': 'remark',
+                'width': '80px'
+            },
+        ],
+
+        'language': {
+            'emptyTable': '无数据',
+            'loadingRecords': '请等待，数据正在加载中......',
+            'processing': '操作中...',
+            'search': '检索:',
+            'zeroRecords': '无数据',
+            'info': '共 _TOTAL_ 项',
+            'infoEmpty': '没有数据',
+            'infoFiltered': ''
+        },
+        "bServerSide": true, //表示从服务器加载数据
+        "sAjaxSource": "{:Url('Ledplan/getDatas')}", //这个是请求的地址
+        "fnServerData": getDatas // 获取数据的处理函数
+    })
+
+    $('#example1 tbody').on('click', 'tr', function(e) {
+        $(this).addClass('selected').siblings().removeClass('selected whiteColor grayColor');
+        $('.DTFC_Cloned tbody tr').eq($(this).index()).addClass('selected').siblings().removeClass(
+            'selected whiteColor grayColor');
+        var row = $('#example1').DataTable().row('.selected').data();
+        console.log(row)
+        if(row.status !== '001'){
+            $(this).addClass('whiteColor')
+            $('.DTFC_Cloned tbody tr').eq($(this).index()).addClass('whiteColor');
+        }else{
+            $(this).addClass('grayColor');
+            $('.DTFC_Cloned tbody tr').eq($(this).index()).addClass('grayColor');
+        }
+        // $(this).addClass('selected rowColor').siblings().removeClass('selected rowColor');
+        // $('.DTFC_Cloned tbody tr').eq($(this).index()).addClass('selected rowColor').siblings().removeClass(
+        //     'selected rowColor');
+    });
+    // $('#example1_wrapper').on('click', '.DTFC_Cloned tbody tr', function(row) {
+    //     if(row.status !== '001'){
+    //         $(this).addClass('selected whiteColor').siblings().removeClass('selected whiteColor grayColor');
+    //         $('.DTFC_Cloned tbody tr').eq($(this).index()).addClass('selected whiteColor').siblings().removeClass(
+    //             'selected whiteColor grayColor');
+    //     }else{
+    //         $(this).addClass('selected grayColor').siblings().removeClass('selected grayColor whiteColor');
+    //         $('.DTFC_Cloned tbody tr').eq($(this).index()).addClass('selected grayColor').siblings().removeClass(
+    //             'selected grayColor whiteColor');
+    //     }
+
+
+    //     // $(this).addClass('selected rowColor').siblings().removeClass('selected rowColor');
+    //     // $('#example1 tbody tr').eq($(this).index()).addClass('selected rowColor').siblings().removeClass(
+    //     //     'selected rowColor');
+    // });
+
+    $("#addExclude").on("shown.bs.modal", function() {
+        $('#example2').DataTable({
+            "processing": true,
+            "ordering": false,
+            "autoWidth": true,
+            'searching': false,
+            "bPaginate": false, // 分页按钮
+            'paging': false,
+            "info": false,
+            "sScrollY": "430",
+            "columnDefs": [{
+                "targets": 0,
+                'title': "方案编号",
+                'width': '25%',
+                'data': 'planNum'
+            }, {
+                "targets": 1,
+                'title': "方案名",
+                'width': '20%',
+                'data': 'name'
+            }, {
+                "targets": 2,
+                'title': "状态",
+                'width': '15%',
+                'data': 'status'
+            }, {
+                "targets": 3,
+                'title': "开始时间",
+                'width': '20%',
+                'data': 'beginTime'
+            }, {
+                "targets": 4,
+                'title': "结束时间",
+                'width': '20%',
+                'data': 'endTime'
+            }, ],
+
+            'language': {
+                'emptyTable': '无数据',
+                'loadingRecords': '请等待，数据正在加载中......',
+                'processing': '加载中...',
+                "sSearch": "模糊查询：",
+                'zeroRecords': '无数据',
+                'infoEmpty': '没有数据',
+                'infoFiltered': ''
+            },
+
+            "destroy": true,
+            "bServerSide": true, //表示从服务器加载数据
+            "sAjaxSource": "{:Url('Ledplan/getExclude')}", //这个是请求的地址
+            "fnServerData": getDatas1 // 获取数据的处理函数
+
+        });
+
+        var table2 = $('#example2').DataTable();
+        $('#example2 tbody').on('click', 'tr', function(row) {
+            $(this).toggleClass('selected');
+        });
+
+        $('#example3').DataTable({
+            "processing": true,
+            "ordering": false,
+            "autoWidth": true,
+            'searching': false,
+            "bPaginate": false, // 分页按钮
+            'paging': false,
+            "info": false,
+            "sScrollY": "470",
+            "columnDefs": [
+                // {  "targets": 0, 'title': "方案编号",'data':'planNum'},
+                {
+                    "targets": 0,
+                    'title': "方案名",
+                    'data': 'name'
+                }, {
+                    "targets": 1,
+                    'title': "状态",
+                    'data': 'status'
+                }, {
+                    "targets": 2,
+                    'title': "排斥类型",
+                    'data': 'excludeType'
+                }, {
+                    "targets": 3,
+                    'title': "屏幕类型",
+                    'data': 'type'
+                }, {
+                    "targets": 4,
+                    'title': "开始时间",
+                    'data': 'beginTime'
+                }, {
+                    "targets": 5,
+                    'title': "结束时间",
+                    'data': 'endTime'
+                },
+            ],
+
+            'language': {
+                'emptyTable': '无数据',
+                'loadingRecords': '请等待，数据正在加载中......',
+                'processing': '加载中...',
+                "sSearch": "模糊查询：",
+                'zeroRecords': '无数据',
+                'infoEmpty': '没有数据',
+                'infoFiltered': ''
+            },
+
+            "destroy": true,
+            "bServerSide": true, //表示从服务器加载数据
+            "sAjaxSource": "{:Url('Ledplan/getyxExclude')}", //这个是请求的地址
+            "fnServerData": getDatas2 // 获取数据的处理函数
+
+        });
+
+        var table3 = $('#example3').DataTable();
+        $('#example3 tbody').on('click', 'tr', function(row) {
+            $(this).toggleClass('selected');
+        });
+
+    })
+
+    $('#serachPlan').click(function() {
+        if ($('#excludeTime').val() == "") {
+            toastr.error('请选择发布日期');
+            return false;
+        }
+        if ($('#excludeEndTime').val() == "") {
+            toastr.error('请选择发布结束日期');
+            return false;
+        }
+        $("body").mLoading({
+            text: '查询中'
+        });
+        $('#example2').DataTable().draw(false);
+        $("body").mLoading('hide');
+    })
+
+    $('#example4').DataTable({
+        "processing": true,
+        "ordering": false,
+        "autoWidth": true,
+        'searching': false,
+        "bPaginate": false, // 分页按钮
+        'paging': false,
+        "info": false,
+        "sScrollY": "470",
+        "columnDefs": [
+            // {  "targets": 0, 'title': "方案编号",'data':'planNum'},
+            {
+                "targets": 0,
+                'title': "发布日期",
+                'data': 'beginTime',
+                'width': '50%'
+            }, {
+                "targets": 1,
+                'title': "结束日期",
+                'data': 'endTime',
+                'width': '50%'
+            },
+        ],
+
+        'language': {
+            'emptyTable': '无数据',
+            'loadingRecords': '请等待，数据正在加载中......',
+            'processing': '加载中...',
+            "sSearch": "模糊查询：",
+            'zeroRecords': '无数据',
+            'infoEmpty': '没有数据',
+            'infoFiltered': ''
+        },
+
+        "destroy": true,
+        "bServerSide": true, //表示从服务器加载数据
+        "sAjaxSource": "{:Url('Ledplan/getSplitDate')}", //这个是请求的地址
+        "fnServerData": getDatas4 // 获取数据的处理函数
+
+    })
+
+    // var left = 0;
+    // $("#example1").on("shown.bs.dropdown",".btn-group",function () {
+    //   var wrapper = $('#example1_wrapper .row').eq(1);
+    //   left =  wrapper.scrollLeft()+'px';
+    //   wrapper.css('overflow-x','hidden');
+    //   wrapper.children('.col-sm-12').css('transform','translateX(0)');
+    //   // wrapper.children('.col-sm-12').css('transform','translateX(-'+left+')');
+    // });
+
+    // $("#example1").on("hide.bs.dropdown",".btn-group",function () {
+    //   var wrapper = $('#example1_wrapper .row').eq(1);
+    //   wrapper.children('.col-sm-12').css('transform','translateX('+left+')');
+    //   wrapper.css('overflow-x','auto');
+    // });
+
+    function getDatas4(sSource, aoData, fnCallback) {
+
+        planId = $('#splitId').val();
+
+        splitDay = [];
+
+        $('#splitDay:checked').each(function() {
+            splitDay.push(this.value);
+        });
+        params = {
+            planId: planId,
+            date: splitDay
+        };
+        // alert(JSON.stringify(aoData));return;
+        $.ajax({
+            url: sSource, //这个就是请求地址对应sAjaxSource
+            data: {
+                "aoData": JSON.stringify(aoData),
+                'params': JSON.stringify(params)
+            }, //这个是把datatable的一些基本数据传给后台,比如起始位置,每页显示的行数
+            type: "post",
+            dataType: "json",
+            async: false,
+            success: function(result) {
+                fnCallback(result); //把返回的数据传给这个方法就可以了,datatable会自动绑定数据的
+            },
+            error: function(msg) {
+                //alert(JSON.stringify(msg));
+            }
+        });
+
+        // // 操作下拉菜单方向
+        // var L = $('.menuWrapper').length;
+        // for (var i = 0; i < L; i++) {
+        //     var _this = $('.menuWrapper').eq(i);
+        //     var _thisTop = $('.menuWrapper').eq(i).offset().top;
+        //     var wrapperTop = $('#example1_wrapper .row').eq(1).offset().top
+        //     var height = $('#example1_wrapper .row').eq(1).height()-(_thisTop-wrapperTop);
+        //     console.log(height)
+        //     if(height < 400){
+        //        _this.children('.btn-group').addClass('dropup');
+        //     }else{
+
+        //     }
+        // }
+
+    }
+
+    function getPrarms() {
+
+        data = {
+            'orderId': $('#serachOrderId').val(),
+            'city': $('#searchPlanCity').val(),
+            'name': $('#searchPlanName').val(),
+            'status': $('#searchPlanStatus').val(),
+            'beginTime': $('#searchPlanTime').val(),
+            'saleUser': $('#searchPlanUser').val(),
+            'type': $('#searchPlanType').val(),
+            'photoRequire': $('#addPhotoRequire_search').val(),
+            'authUrl': $('#searchPlanUser').val(),
+            'createMan': $('#searchCreateMan').val(),
+            'isdelete': $('#onlyDeleted').is(':checked'),
+        };
+        return data;
+    }
+
+    function getDatas(sSource, aoData, fnCallback) {
+
+        params = getPrarms();
+        // alert(JSON.stringify(aoData));return;
+        $.ajax({
+            url: sSource, //这个就是请求地址对应sAjaxSource
+            data: {
+                "aoData": JSON.stringify(aoData),
+                'params': JSON.stringify(params)
+            }, //这个是把datatable的一些基本数据传给后台,比如起始位置,每页显示的行数
+            type: "post",
+            dataType: "json",
+            async: false,
+            success: function(result) {
+                fnCallback(result); //把返回的数据传给这个方法就可以了,datatable会自动绑定数据的
+                var div = '<span style="margin-left: 20px">' +
+                    '<span class="title_class">合同数共计： <span class="title_color total_compactNum">0</span>项;</span></span>' +
+                    '<span class="title_class">调剂数共计： <span class="title_color total_regulateNum">0</span>项;</span></span>' +
+                    '<span class="title_class ">点位数共计： <span class="title_color total_counts">0</span>项;</span></span>' +
+                    '<span class="title_class ">被踢数共计： <span class="title_color total_btCounts">0</span>项;</span></span>'+
+                    '<span>当前可售点位： <span class="title_color total_can_sale">0</span></span></span>'
+                $("#example1_wrapper").find('#example1_info').append(div)
+                if (result.aaData.length) {
+                    $(".total_compactNum").text(result.countSum.compactNum)
+                    $(".total_regulateNum").text(result.countSum.regulateNum)
+                    $(".total_counts").text(result.countSum.counts)
+                    $(".total_btCounts").text(result.countSum.btCounts)
+                    $(".total_can_sale").text(result.countSum.elevators)
+                }
+                if ($("#issend").val() == 1) {
+                    result.aaData.forEach(function(item, index) {
+                        if (item.id == $("#sendCustomerNum").val()) {
+                            if (index > 6) {
+                                $('#example1_wrapper .dataTables_scrollBody').scrollTop((index - 4) * 36)
+                                $('#example1').DataTable().row(index).nodes().to$().addClass('selected rowColor')
+                                return
+                            } else {
+                                $('#example1_wrapper .dataTables_scrollBody').scrollTop(0)
+                                $('#example1').DataTable().row(index).nodes().to$().addClass('selected rowColor')
+                            }
+                        }
+                    })
+                } else if ($("#issend").val() == 2 || $("#issend").val() == 3) {
+                    result.aaData.forEach(function(item, index) {
+                        if (item.id == $("#cusConfirmNum").val()) {
+                            if (index > 6) {
+                                $('#example1_wrapper .dataTables_scrollBody').scrollTop((index - 4) * 36)
+                                $('#example1').DataTable().row(index).nodes().to$().addClass('selected rowColor')
+                                return
+                            } else {
+                                $('#example1_wrapper .dataTables_scrollBody').scrollTop(0)
+                                $('#example1').DataTable().row(index).nodes().to$().addClass('selected rowColor')
+                            }
+                        }
+                    })
+                }
+            },
+            error: function(msg) {
+                //alert(JSON.stringify(msg));
+            }
+        });
+    }
+
+    function getDatas1(sSource, aoData, fnCallback) {
+
+        planId = $('#excludePlanId').val();
+        beginTime = $('#excludeTime').val();
+        planType = $('#excludePlanType').val();
+        planName = $('#excludePlanName').val();
+
+        params = {
+            planId: planId,
+            beginTime: beginTime,
+            planType: planType,
+            planName: planName,
+            endTime: $("#excludeEndTime").val()
+        };
+
+        $.ajax({
+            url: sSource, //这个就是请求地址对应sAjaxSource
+            data: {
+                "aoData": JSON.stringify(aoData),
+                'params': JSON.stringify(params)
+            }, //这个是把datatable的一些基本数据传给后台,比如起始位置,每页显示的行数
+            type: "post",
+            dataType: "json",
+            async: false,
+            success: function(result) {
+                fnCallback(result); //把返回的数据传给这个方法就可以了,datatable会自动绑定数据的
+            },
+            error: function(msg) {
+                //alert(JSON.stringify(msg));
+            }
+        });
+    }
+
+    function getDatas2(sSource, aoData, fnCallback) {
+
+        planId = $('#excludePlanId').val();
+        params = {
+            planId: planId
+        };
+        $.ajax({
+            url: sSource, //这个就是请求地址对应sAjaxSource
+            data: {
+                "aoData": JSON.stringify(aoData),
+                'params': JSON.stringify(params)
+            }, //这个是把datatable的一些基本数据传给后台,比如起始位置,每页显示的行数
+            type: "post",
+            dataType: "json",
+            async: false,
+            success: function(result) {
+                fnCallback(result); //把返回的数据传给这个方法就可以了,datatable会自动绑定数据的
+            },
+            error: function(msg) {
+                //alert(JSON.stringify(msg));
+            }
+        });
+    }
+    /*高位补零*/
+    function PrefixInteger(num, length) {
+        return (Array(length).join('0') + num).slice(-length);
+    }
+    function copyPlan(id){
+
+        if (!checkAuth("Ledplan/addplan")) {
+            return false;
+        }
+        $.getJSON("{:Url('Ledplan/lookPlan')}", {
+            id: id
+        }, function(data) {
+            //$('.addOrder').val(data.orderId);
+            $('#addSaleUser').select2("val",[data.saleUser]);
+            $('#addName').val(data.name);
+            $('#addBeginTime').val(data.beginTime);
+            $('#addEndTime').val(data.endTime);
+            $('#addTrade').select2("val", [data.trade]);
+            $('#addSaleType').select2("val", [data.saleType]);
+            $('#addSinglePrice').val(data.singlePrice);
+            $('#addProductPrice').val(data.productPrice);
+            $('#addCompactNum').val(data.compactNum);
+            $('#addRegulateNum').val(data.regulateNum);
+            $('#addCity').select2("val", [data.city]);
+            $('#addSeconds').select2("val", [data.seconds]);
+            $('#addNumbers').select2("val", [data.numbers]);
+            $('#addType').select2("val", [data.type]);
+            $('#remark').val(data.remark);
+            $('#addDeliveryMode').select2("val", [data.deliveryMode]);
+            $('#addPhotoRequire').select2("val", [data.photoRequire]);
+            $('#addPhotoPack').select2("val", [data.photoPack]);
+            $('#addPhotoReport').select2("val", [data.photoReport]);
+            $('#addPhotoDown').select2("val", [data.photoDown]);
+            $('#addPhotoUp').select2("val", [data.photoUp]);
+
+            $('#oldAddType').val(data.type);
+            seachTime()
+            if (data.continuation == 1) {
+                $('#addContinuation').prop({
+                    'checked': true,
+                    'value': 1
+                });
+            };
+
+            if (data.moreTwo == 1) {
+                $('#addMoreTwo').prop({
+                    'checked': true,
+                    'value': 1
+                });
+            }
+            //过了上刊时间的方案，不可以编辑勾选全网方案
+            let rst = CompareDate(data.beginTime);
+            if (rst) {
+                $('#addWholeNetwork').prop('disabled', true);
+            }
+            if (data.wholeNetwork == 1) {
+                $('#addWholeNetwork').prop({
+                    'checked': true,
+                    'value': 1
+                });
+            }
+            $('#addPlan').modal('show');
+            $("#addName").css({
+                'background': '#fff'
+            })
+            $('#myPlanTitle').html('复制方案');
+            $("#addPlan").on('shown.bs.modal', function() {
+                $("#addSaleType").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addSaleUser").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addOrder").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addTrade").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addCity").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addSeconds").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addNumbers").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addType").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addDeliveryMode").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addPhotoRequire").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $('#addName').css({
+                    'background': '#fff3f3'
+                })
+                $('#addEndTime').css({
+                    'background': '#fff3f3'
+                })
+            })
+            $('#addSubmit').show();
+        }, 'json');
+    }
+
+    function addPlan() {
+        if (!checkAuth("Ledplan/addplan")) {
+            return false;
+        }
+        //获取选中列表中的城市
+        var city = $('#searchPlanCity').val();
+        $('#addCity').select2("val", [city]);
+        $('#myPlanTitle').html('新增方案');
+        $('#addSubmit').show();
+        $("#addName").css({
+            'background': '#fff3f3'
+        })
+        $('#addPlan').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+        if($("#searchPlanTime").val().length == 0){
+            return false;
+        }
+        $("#addBeginTime").val($("#searchPlanTime").val())
+        var date = new Date($("#searchPlanTime").val())
+        dd = date.getDay() //当前星期几 0 -6
+        var timePoint = new Date((5 - dd) * (3600 * 24 * 1000) + date.getTime()).getTime(); /*获取当前周的星期五时间戳*/
+        if (dd > 5) {
+            /*下周星期五*/
+            date.setTime(timePoint + 3600 * 24 * 1000 * 7)
+        } else if (dd <= 5) {
+            /*本周星期五*/
+            date.setTime(timePoint)
+        }
+        var endVar = date.toLocaleDateString().replace(/-/g, "/")
+        endVar = endVar.split("/")
+        $('#addEndTime').val(PrefixInteger(endVar[1], 2) + '/' + PrefixInteger(endVar[2], 2) + '/' + endVar[0])
+
+        if ($("#addBeginTime").val() && $('#addEndTime').val()) {
+            var startDate = $("#addBeginTime").val()
+            var beDd = startDate.substring(3, 5);
+            var beMm = startDate.substring(0, 2);
+            var beYy = startDate.substring(6)
+            var beTime = beYy + '-' + beMm + '-' + beDd;
+            var enDd = $('#addEndTime').val().substring(3, 5);
+            var enMm = $('#addEndTime').val().substring(0, 2);
+            var enYy = $('#addEndTime').val().substring(6);
+            var enTime = enYy + '-' + enMm + '-' + enDd;
+            $("#differ_days").text(datedifference(beTime, enTime) + '天')
+        } else {
+            $("#differ_days").text(0 + '天')
+        }
+        $("#addPlan").on('shown.bs.modal', function() {
+            $("#addSaleType").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addSaleUser").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addOrder").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addTrade").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addCity").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addSeconds").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addNumbers").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addType").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addDeliveryMode").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addPhotoRequire").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+        })
+        $('#oldAddType').val('');
+        $('#addPlan').modal('show');
+    }
+
+    function addPlanSubmit() {
+
+        if ($('#addSaleUser').val() == "") {
+            toastr.error('业务人员不能为空');
+            return false;
+        }
+
+        if ($('#addName').val() == "") {
+            toastr.error('广告名称不能为空');
+            return false;
+        }
+        if ($('#addOrder').val() == null) {
+            toastr.error('合同不能为空');
+            return false;
+        }
+        if ($('#addBeginTime').val() == "") {
+            toastr.error('开始时间不能为空');
+            return false;
+        }
+        if ($('#addEndTime').val() == "") {
+            toastr.error('结束时间不能为空');
+            return false;
+        }
+        if ($('#addTrade').val() == "") {
+            toastr.error('投放行业不能为空');
+            return false;
+        }
+        if ($('#addSaleType').val() == "") {
+            toastr.error('销售类型不能为空');
+            return false;
+        }
+        if ($('#addCity').val() == "") {
+            toastr.error('城市不能为空');
+            return false;
+        }
+        if ($('#addSeconds').val() == "") {
+            toastr.error('广告时长不能为空');
+            return false;
+        }
+        if ($('#addNumbers').val() == "") {
+            toastr.error('投放频次不能为空');
+            return false;
+        }
+        if ($('#addType').val() == "") {
+            toastr.error('屏幕类型不能为空');
+            return false;
+        }
+        if ($('#addDeliveryMode').val() == "") {
+            toastr.error('投放方式不能为空');
+            return false;
+        }
+        if ($('#addPhotoRequire').val() == "") {
+            toastr.error('拍照要求不能为空');
+            return false;
+        }
+        if ($('#addPhotoPack').val() == "") {
+            toastr.error('照片打包不能为空');
+            return false;
+        }
+        if ($('#addPhotoReport').val() == "") {
+            toastr.error('拍照方式不能为空');
+            return false;
+        }
+        if ($('#addPhotoUp').val() == "") {
+            toastr.error('上刊带报不能为空');
+            return false;
+        }
+        if ($('#addPhotoDown').val() == "") {
+            toastr.error('下刊带报不能为空');
+            return false;
+        }
+        if ($.trim($('#remark').val()).length > 10) {
+            toastr.error('备注类容长度不能超过10位');
+            return false;
+        }
+        if ($.trim($('#addName').val()).length > 20) {
+            toastr.error('广告名称长度不能超过20位');
+            return false;
+        }
+
+
+        var beginDate = $('#addBeginTime').val();
+        beginDate = new Date(Date.parse(beginDate.replace(/-/g, "/")));
+        beginDate = beginDate.getTime();
+
+        var endDate = $('#addEndTime').val();
+        endDate = new Date(Date.parse(endDate.replace(/-/g, "/")));
+        endDate = endDate.getTime();
+
+        if (beginDate > endDate) {
+            toastr.error('开始时间不能大于结束时间');
+            return false;
+        }
+
+        if ($('#addPhotoRequire').val() != '001' && $('#addPhotoReport').val() == '001') {
+            toastr.error('当需要拍照得时候，拍照方式不能选否');
+            return false;
+        }
+
+        if ($('#addPhotoRequire').val() == '002' && $('#addPhotoDown').val() == '001') {
+            toastr.error('拍上刊不能选择下刊带报');
+            return false;
+        }
+
+        if ($('#addPhotoRequire').val() == '003' && $('#addPhotoUp').val() == '001') {
+            toastr.error('拍下刊不能选择上刊带报');
+            return false;
+        }
+        // console.log($('#addContinuation').prop('checked'))
+        var continuation = ''
+        var moreTwo = ''
+        if ($('#addContinuation').prop('checked')) {
+            continuation = 1
+        } else {
+            continuation = 0
+        }
+        if ($('#addMoreTwo').prop('checked')) {
+            moreTwo = 1
+        } else {
+            moreTwo = 0
+        }
+        var oldData = $('#editPlanData').val();
+        params = {
+            saleUser: $('#addSaleUser').val(),
+            orderId: $('#addOrder').val(),
+            beginTime: $('#addBeginTime').val(),
+            endTime: $('#addEndTime').val(),
+            trade: $('#addTrade').val(),
+            saleType: $('#addSaleType').val(),
+            singlePrice: $('#addSinglePrice').val(),
+            productPrice: $('#addProductPrice').val(),
+            compactNum: $('#addCompactNum').val(),
+            regulateNum: $('#addRegulateNum').val(),
+            city: $('#addCity').val(),
+            seconds: $('#addSeconds').val(),
+            numbers: $('#addNumbers').val(),
+            type: $('#addType').val(),
+            deliveryMode: $('#addDeliveryMode').val(),
+            photoRequire: $('#addPhotoRequire').val(),
+            photoPack: $('#addPhotoPack').val(),
+            photoReport: $('#addPhotoReport').val(),
+            photoUp: $('#addPhotoUp').val(),
+            photoDown: $('#addPhotoDown').val(),
+            planId: $('#planId').val(),
+            continuation: continuation,
+            wholeNetwork: $('#addWholeNetwork').val(),
+            moreTwo: moreTwo,
+            remark: $('#remark').val(),
+            name: $('#addName').val(),
+            //            token:$('#review-token').val()
+            oldData:oldData
+        };
+
+        $('#oldAddType').val()
+        $('#addType').val()
+        if ($('#oldAddType').val() != '') {
+            if ($('#oldAddType').val() != $('#addType').val()) {
+                cc = Ewin.confirm({
+                    'message': '确定编辑屏幕类型?'
+                }).on(function(e) {
+                    if (e) {
+
+                        $("body").mLoading({
+                            text: '提交中'
+                        });
+                        $.post("{:Url('Ledplan/addPlan')}", params, function(data) {
+
+                            if (data.code == 0) {
+                                toastr.error(data.msg);
+                                $("body").mLoading('hide')
+                            } else {
+                                toastr.success(data.msg);
+                                $("body").mLoading('hide');
+                                $('#addPlan').modal('hide');
+                                var table = $('#example1').DataTable();
+                                table.draw(false);
+                            }
+                        }, 'json');
+                    }
+                });
+                return false;
+            }
+        }
+
+        $("body").mLoading({
+            text: '提交中'
+        });
+        $.post("{:Url('Ledplan/addPlan')}", params, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+                $("body").mLoading('hide');
+            } else {
+                toastr.success(data.msg);
+                $("body").mLoading('hide');
+                $('#addPlan').modal('hide');
+                var table = $('#example1').DataTable();
+                table.draw(false);
+            }
+        }, 'json');
+
+    }
+
+    function lookPlan(id) {
+        if (!checkAuth("Ledplan/lookplan")) {
+            return false;
+        }
+
+        $.getJSON("{:Url('Ledplan/lookPlan')}", {
+            id: id
+        }, function(data) {
+            $('.addOrder').val(data.orderId);
+            $('#addSaleUser').select2("val", [data.saleUser]);
+            $('#addName').val(data.name);
+            $('#addBeginTime').val(data.beginTime);
+            $('#addEndTime').val(data.endTime);
+            $('#addTrade').select2("val", [data.trade]);
+            $('#addSaleType').select2("val", [data.saleType]);
+            $('#addSinglePrice').val(data.singlePrice);
+            $('#addProductPrice').val(data.productPrice);
+            $('#addCompactNum').val(data.compactNum);
+            $('#addRegulateNum').val(data.regulateNum);
+            $('#addCity').select2("val", [data.city]);
+            $('#addSeconds').select2("val", [data.seconds]);
+            $('#addNumbers').select2("val", [data.numbers]);
+            $('#addType').select2("val", [data.type]);
+            $('#addDeliveryMode').select2("val", [data.deliveryMode]);
+            $('#addPhotoRequire').select2("val", [data.photoRequire]);
+            $('#addPhotoPack').select2("val", [data.photoPack]);
+            $('#addPhotoReport').select2("val", [data.photoReport]);
+            $('#addPhotoDown').select2("val", [data.photoDown]);
+            $('#addPhotoUp').select2("val", [data.photoUp]);
+            $('#remark').val(data.remark);
+            if (data.continuation == 1) {
+                $('#addContinuation').prop('checked', true);
+            }
+            if (data.moreTwo == 1) {
+                $('#addMoreTwo').prop('checked', true);
+            }
+            if (data.wholeNetwork == 1) {
+                $('#addWholeNetwork').prop('checked', true);
+            }
+            $('#addSubmit').hide();
+            $("#addSaleType").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addSaleUser").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addOrder").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addTrade").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addCity").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addSeconds").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addNumbers").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addType").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addDeliveryMode").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $("#addPhotoRequire").next().children().find('.select2-selection--single').css({
+                'background': '#fff3f3'
+            })
+            $('#myPlanTitle').html('查看方案');
+            $('#addPlan').modal('show');
+
+            seachTime()
+        }, 'json');
+    }
+
+    function seachTime() {
+        if ($("#addBeginTime").val() && $('#addEndTime').val()) {
+            var beDd = $('#addBeginTime').val().substring(3, 5);
+            var beMm = $('#addBeginTime').val().substring(0, 2);
+            var beYy = $('#addBeginTime').val().substring(6)
+            var beTime = beYy + '-' + beMm + '-' + beDd;
+            var enDd = $('#addEndTime').val().substring(3, 5);
+            var enMm = $('#addEndTime').val().substring(0, 2);
+            var enYy = $('#addEndTime').val().substring(6);
+            var enTime = enYy + '-' + enMm + '-' + enDd;
+            $("#differ_days").text(datedifference(beTime, enTime) + '天')
+        } else {
+            $("#differ_days").text(0 + '天')
+        }
+    }
+
+    function CompareDate(oldTime) {
+        let myDate = new Date();
+        let time = myDate.toLocaleTimeString(); //当前时间
+        return ((new Date(time)) > (new Date(oldTime)));
+    }
+
+    function editPlan(id) {
+        $('#editPlanData').val('');
+        if (!checkAuth("Ledplan/editplan")) {
+            return false;
+        }
+
+        $.getJSON("{:Url('Ledplan/lookPlan')}", {
+            id: id
+        }, function(data) {
+            $('#editPlanData').val(JSON.stringify(data));
+            $('#planId').val(data.id);
+            $('.addOrder').val(data.orderId);
+            $('#addSaleUser').select2("val",[data.saleUser]);
+            $('#addName').val(data.name);
+            $('#addBeginTime').val(data.beginTime);
+            $('#addEndTime').val(data.endTime);
+            $('#addTrade').select2("val", [data.trade]);
+            $('#addSaleType').select2("val", [data.saleType]);
+            $('#addSinglePrice').val(data.singlePrice);
+            $('#addProductPrice').val(data.productPrice);
+            $('#addCompactNum').val(data.compactNum);
+            $('#addRegulateNum').val(data.regulateNum);
+            $('#addCity').select2("val", [data.city]);
+            $('#addSeconds').select2("val", [data.seconds]);
+            $('#addNumbers').select2("val", [data.numbers]);
+            $('#addType').select2("val", [data.type]);
+            $('#remark').val(data.remark);
+            $('#addDeliveryMode').select2("val", [data.deliveryMode]);
+            $('#addPhotoRequire').select2("val", [data.photoRequire]);
+            $('#addPhotoPack').select2("val", [data.photoPack]);
+            $('#addPhotoReport').select2("val", [data.photoReport]);
+            $('#addPhotoDown').select2("val", [data.photoDown]);
+            $('#addPhotoUp').select2("val", [data.photoUp]);
+
+            $('#oldAddType').val(data.type);
+            seachTime()
+            if (data.continuation == 1) {
+                $('#addContinuation').prop({
+                    'checked': true,
+                    'value': 1
+                });
+            };
+
+            if (data.moreTwo == 1) {
+                $('#addMoreTwo').prop({
+                    'checked': true,
+                    'value': 1
+                });
+            }
+            //过了上刊时间的方案，不可以编辑勾选全网方案
+            let rst = CompareDate(data.beginTime);
+            if (rst) {
+                $('#addWholeNetwork').prop('disabled', true);
+            }
+            if (data.wholeNetwork == 1) {
+                $('#addWholeNetwork').prop({
+                    'checked': true,
+                    'value': 1
+                });
+            }
+
+            $('#addSaleUser').attr('disabled', true);
+            $('#addOrder').attr('disabled', true);
+            $('#addBeginTime').attr('disabled', true);
+            $('#addEndTime').attr('disabled', true);
+            $('#addCity').attr('disabled', true);
+
+            $('#addSaleType').attr('disabled', false);
+            if (data.status == '003') {
+                $('#addSaleType').attr('disabled', true);
+            }
+            /*空位销售*/
+            if (data.status == '002' || data.status == '003') {
+                $('#addWholeNetwork').attr('disabled', true);
+            }
+            if (data.status != '001') {
+                $('#addType').attr('disabled', true);
+                $('#addTrade').attr('disabled', true);
+                $('#addSeconds').attr('disabled', true);
+                $('#addNumbers').attr('disabled', true);
+                $('#addDeliveryMode').attr('disabled', true);
+                $('#addContinuation').attr('disabled', true);
+                $('#addMoreTwo').attr('disabled', true);
+            }
+
+            $('#addPlan').modal('show');
+            $("#addName").css({
+                'background': '#fff'
+            })
+            $('#myPlanTitle').html('编辑方案');
+            $("#addPlan").on('shown.bs.modal', function() {
+                $("#addSaleType").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addSaleUser").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addOrder").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addTrade").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addCity").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addSeconds").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addNumbers").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addType").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addDeliveryMode").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $("#addPhotoRequire").next().children().find('.select2-selection--single').css({
+                    'background': '#fff3f3'
+                })
+                $('#addName').css({
+                    'background': '#fff3f3'
+                })
+                $('#addEndTime').css({
+                    'background': '#fff3f3'
+                })
+            })
+            $('#addSubmit').show();
+        }, 'json');
+    }
+
+    function manage(planId) {
+
+        if (!checkAuth("Ledplan/manageplan")) {
+            return false;
+        }
+        $.post("{:Url('Ledplan/checkBeginTime')}",{planId:planId},function(data){
+            if(data){
+                $.ajax({
+                    url: "{:Url('Ledplan/getToken')}",
+                    data: {
+                        id: planId
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        planToken = data.token;
+                        url = "{:Url('Ledplan/managePlan',['id'=>planId,'token'=>planToken])}";
+                        url = url.replace('planId', planId);
+                        url = url.replace('planToken', planToken);
+                        window.open(url);
+                    }
+                });
+            }else {
+                toastr.error('过了上刊时间的方案不能再选点');
+            }
+        },'json')
+
+    }
+
+    function addExclude(id) {
+        if (!checkAuth("Ledplan/addexclude")) {
+            return false;
+        }
+        $('#excludePlanId').val(id);
+        $('#addExclude').modal('show');
+
+        $("#addBeginTime").val($("#searchPlanTime").val())
+        var date = new Date($("#searchPlanTime").val())
+        dd = date.getDay() //当前星期几 0 -6
+        var timePoint = new Date((5 - dd) * (3600 * 24 * 1000) + date.getTime()).getTime(); /*获取当前周的星期五时间戳*/
+        if (dd > 5) {
+            /*下周星期五*/
+            date.setTime(timePoint + 3600 * 24 * 1000 * 7)
+        } else if (dd <= 5) {
+            /*本周星期五*/
+            date.setTime(timePoint)
+        }
+        var endVar = date.toLocaleDateString().replace(/-/g, "/")
+        endVar = endVar.split("/")
+        $('#addEndTime').val(PrefixInteger(endVar[1], 2) + '/' + PrefixInteger(endVar[2], 2) + '/' + endVar[0])
+
+    }
+
+    function exclude(excludeType, type) {
+
+        if (!checkAuth("Ledplan/addexclude")) {
+            return false;
+        }
+
+        planId = $('#excludePlanId').val();
+
+        if (type == 1) {
+            row = $('#example2').DataTable().rows('.selected').data();
+
+        } else {
+            row = $('#example3').DataTable().rows('.selected').data();
+        }
+
+        if (row.length == 0) {
+            toastr.error('请选择方案');
+            return false;
+        }
+
+        planIds = [];
+        for (var i = 0, l = row.length; i < l; i++) {
+            planIds.push(row[i].id);
+        }
+        planIds = planIds.join(",");
+
+        params = {
+            planId: planId,
+            otherPlanId: planIds,
+            excludeType: excludeType
+        };
+
+        $("body").mLoading({
+            text: '加入中'
+        });
+
+        $.post("{:Url('Ledplan/addExclude')}", params, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+                $('#example2').DataTable().draw();
+                $('#example3').DataTable().draw();
+            }
+
+            $("body").mLoading('hide');
+        }, 'json');
+
+    }
+
+    function delExclude() {
+        if (!checkAuth("Ledplan/delexclude")) {
+            return false;
+        }
+
+        planId = $('#excludePlanId').val();
+        row = $('#example3').DataTable().rows('.selected').data();
+        if (row.length == 0) {
+            toastr.error('请选择方案');
+            return false;
+        }
+
+        planIds = [];
+        for (var i = 0, l = row.length; i < l; i++) {
+            planIds.push(row[i].id);
+        }
+        planIds = planIds.join(",");
+
+        params = {
+            planId: planId,
+            otherPlanId: planIds
+        };
+
+        $("body").mLoading({
+            text: '删除中'
+        });
+        $.get("{:Url('Ledplan/delExclude')}", params, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+                $('#example2').DataTable().draw();
+                $('#example3').DataTable().draw();
+            }
+
+            $("body").mLoading('hide');
+        }, 'json');
+    }
+
+    function delPlan(planId) {
+
+        if (!checkAuth("Ledplan/delplan")) {
+            return false;
+        }
+
+        cc = Ewin.confirm({
+            'message': '确定删除?'
+        }).on(function(e) {
+            if (e) {
+
+                $("body").mLoading({
+                    text: '删除中'
+                });
+                $.get("{:Url('Ledplan/delPlan')}", {
+                    planId: planId
+                }, function(data) {
+                    if (data.code == 0) {
+                        toastr.error(data.msg);
+                    } else {
+                        toastr.success(data.msg);
+                    }
+                    $('#example1').DataTable().draw(false);
+                    $("body").mLoading('hide');
+                }, 'json');
+            }
+        });
+    }
+
+    function sendCustomer(planId) {
+
+        if (!checkAuth("Ledplan/sendcustomer")) {
+            return false;
+        }
+
+        $("body").mLoading({
+            text: '发送中'
+        });
+        $.get("{:Url('Ledplan/sendCustomer')}", {
+            planId: planId
+        }, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+                toastr.success(data.msg);
+                $('#sendCustomerNum').val(planId)
+                $("#issend").val('1')
+                $('#example1').DataTable().draw(true);
+                $('#sendCustomerNum').val('')
+                $("#issend").val('')
+
+            }
+
+            $("body").mLoading('hide');
+        }, 'json');
+
+    }
+
+
+    function sendMessageAgain(planId) {
+
+        if (!checkAuth("Ledplan/sendmessageagain")) {
+            return false;
+        }
+
+        $.get("{:Url('Ledplan/getContacts1')}", {
+            planId: planId
+        }, function(data) {
+
+            $('#contacts1').html(data.html);
+
+        }, 'json');
+
+        $('#sendMessage1').modal('show');
+
+    }
+
+    function sendMessageAgain1(cid, planId, phone) {
+
+        if (!checkAuth("Ledplan/sendmessageagain")) {
+            return false;
+        }
+
+        $("body").mLoading({
+            text: '发送中'
+        });
+        $.get("{:Url('Ledplan/sendMessageAgain')}", {
+            cid: cid,
+            planId: planId,
+            phone: phone
+        }, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+                toastr.success(data.msg);
+                $('#example1').DataTable().draw(false);
+                $('#sendMessage1').modal('hide');
+                $('#contacts1').html('');
+            }
+
+            $("body").mLoading('hide');
+        }, 'json');
+
+    }
+
+    function cancelStatus(planId) {
+
+        if (!checkAuth("Ledplan/cancelstatus")) {
+            return false;
+        }
+
+        cc = Ewin.confirm({
+            'message': '确定撤销?'
+        }).on(function(e) {
+            if (e) {
+
+                $("body").mLoading({
+                    text: '撤销中'
+                });
+
+                $.get("{:Url('Ledplan/cancelStatus')}", {
+                    planId: planId
+                }, function(data) {
+
+                    if (data.code == 0) {
+                        toastr.error(data.msg);
+                    } else {
+                        toastr.success(data.msg);
+                        $("#issend").val('3');
+                        $("#cusConfirmNum").val(planId)
+                        $('#example1').DataTable().draw(false);
+                        $("#issend").val();
+                        $("#cusConfirmNum").val()
+                    }
+
+                    $("body").mLoading('hide');
+                }, 'json');
+            }
+        });
+
+    }
+
+    //编辑业务人员
+    function editSaleOrOrderId(planId) {
+
+        /*if (!checkAuth("Ledplan/editSale")) {
+            return false;
+        }*/
+
+        $.post("{:Url('Ledplan/lookPlan')}",{id:planId},function(data){
+            $('#saleId').val(planId);
+            $('.editOrder').val(data.orderId);
+            $('#editSaleUser').select2("val",[data.saleUser]);
+        },'json');
+
+        $('#dateId').val(planId);
+        $('#changeSaleUser').modal('show');
+    }
+
+    //业务员下拉框选择后改变订单
+    $('#editSaleUser').change(function() {
+        userId = $(this).val();
+        $.getJSON("{:Url('Ledplan/getOrderById')}", {
+            userId: userId
+        }, function(data) {
+            if (data.code == 0) {
+                window.location.href = data.msg;
+            } else {
+                $('#editOrder').empty();
+                for (var i = 0, l = data.length; i < l; i++) {
+                    $('#editOrder').append('<option value=' + data[i].id + '>' + data[i].orderNum +
+                        '-' + data[i].name + '</option>');
+                }
+                if ($('.editOrder').val()) {
+                    $('#editOrder').select2('val', [$('.editOrder').val()]);
+                }
+            }
+        }, 'json');
+    });
+
+    function changeDate(planId) {
+
+        if (!checkAuth("Ledplan/changedate")) {
+            return false;
+        }
+
+        $('#dateId').val(planId);
+        $('#changeDate').modal('show');
+    }
+
+    //编辑业务人员和合同
+    function editSaleOrOrder(){
+        var planId      = $('#saleId').val();
+        var saleUser    = $('#editSaleUser').val();
+        var orderId     = $('#editOrder').val();
+        if (saleUser == "") {
+            toastr.error('业务人员不能为空');
+            return false;
+        }
+        if (orderId == "" || orderId == null) {
+            toastr.error('合同不能为空');
+            return false;
+        }
+        $("body").mLoading('show');
+        $.post("{:Url('Ledplan/editSale')}",{id:planId,saleUser:saleUser,orderId:orderId},function(data){
+            if (data.code == 0) {
+                toastr.error(data.msg);
+                $("body").mLoading('hide');
+            } else {
+                toastr.success(data.msg);
+                $("body").mLoading('hide');
+                $('#changeSaleUser').modal('hide');
+                var table = $('#example1').DataTable();
+                table.draw(false);
+            }
+        },'json')
+    }
+
+    function addChangeDate() {
+
+        planId = $('#dateId').val();
+        date = $('#changeDateTime').val();
+
+        if (!date) {
+            toastr.error('结束日不能为空');
+            return false;
+        }
+
+        $("body").mLoading({
+            text: '调整中'
+        });
+
+        $.get("{:Url('Ledplan/changeDate')}", {
+            planId: planId,
+            date: date
+        }, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+                toastr.success(data.msg);
+                $('#changeDateTime').val('');
+                $('#changeDate').modal('hide');
+                $('#example1').DataTable().draw(false);
+                $('#changeDateTime').val('');
+            }
+
+            $("body").mLoading('hide');
+        }, 'json');
+
+    }
+
+    function exportExcel(planId) {
+
+        if (!checkAuth("Ledplan/exportexcel")) {
+            return false;
+        }
+
+        $("body").mLoading({
+            text: '导出中'
+        });
+
+        $.get("{:Url('Ledplan/exportExcel')}", {
+            planId: planId
+        }, function(data) {
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+                window.location.href = data.url;
+            }
+
+            $("body").mLoading('hide');
+        }, 'json');
+    }
+
+    function exportMap(planId) {
+
+        if (!checkAuth("Ledplan/exportmap")) {
+            return false;
+        }
+
+        url = "{:Url('Ledplan/exportMap', 'id=planId')}";
+
+        url = url.replace('planId', planId);
+
+        window.location.href = url;
+
+    }
+
+    function cusConfirm(planId) {
+
+        if (!checkAuth("Ledplan/cusconfirm")) {
+            return false;
+        }
+
+        $("body").mLoading({
+            text: '确认中'
+        });
+        $.get("{:Url('Ledplan/cusConfirm')}", {
+            planId: planId
+        }, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+                toastr.success(data.msg);
+
+                $('#example1').DataTable().draw(false);
+
+            }
+
+            $("body").mLoading('hide');
+        }, 'json');
+
+    }
+
+    function splitPlan(planId) {
+
+        if (!checkAuth("Ledplan/splitplan")) {
+            return false;
+        }
+
+        $('#splitId').val(planId);
+
+        $.get("{:Url('Ledplan/splitPlan')}", {
+            planId: planId
+        }, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+
+                $('#splitPlan').modal('show');
+                $('.split').html(data.msg);
+                $('#example4').DataTable().draw(false);
+
+            }
+        }, 'json');
+
+    }
+
+    function splitDate() {
+
+        $('#example4').DataTable().draw(false);
+    }
+
+    function submitSplit() {
+
+        planId = $('#splitId').val();
+
+        splitDay = [];
+
+        $('#splitDay:checked').each(function() {
+            splitDay.push(this.value);
+        });
+
+        if (splitDay.length == 0) {
+            toastr.error('请选择拆解日期');
+            return false;
+        }
+
+        params = {
+            planId: planId,
+            date: splitDay
+        };
+
+        $("body").mLoading({
+            text: '拆解中'
+        });
+
+        $.post("{:Url('Ledplan/submitSplit')}", {
+            'params': JSON.stringify(params)
+        }, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+
+                $('#splitPlan').modal('hide');
+                $('#example1').DataTable().draw(false);
+            }
+
+            $("body").mLoading('hide');
+        }, 'json');
+    }
+
+    function lookBtReason(planId) {
+        if (!checkAuth("Ledplan/getbtreason")) {
+            return false;
+        }
+        $("#beiti").modal('show')
+        $('#btId').val(planId);
+        $('#bt-body').html('');
+        $("body").mLoading({
+            text: '加载中'
+        });
+        $.get("{:Url('Ledplan/getBtReason')}", {
+            planId: planId
+        }, function(data) {
+            if (data.code == '000') {
+                let str = '';
+                $(data.aaData).each(function(i, item) {
+                    str += "<tr><td>" + (item.kickTime) + "</td><td>" + (item.code) + "</td><td>" + (
+                            item.premisesType) + "</td><td>" + (item.premisesName) + "</td>" +
+                        "<td>" + (item.buildingName) + "</td><td>" + (item.unitName) + "</td><td>" + (
+                            item.elevatorName) + "</td><td>" + (item.line) + "</td>" +
+                        "<td>" + (item.area) + "</td><td>" + (item.pointSize) + "</td><td>" + (item.location) +
+                        "</td><td>" + (item.kickedReason) + "</td><td>" + (item.failRetryReson) + "</td></tr>";
+                });
+                $('#bt-body').html(str);
+                $("body").mLoading('hide');
+                //被踢点位点位编码保存
+                $("#pId").val(''); //设置之前先置空
+                $("#pId").val(planId);
+            }
+
+        }, 'json');
+    }
+
+    function lookDeleteBtReason(planId) {
+        if (!checkAuth("Ledplan/getbtreason")) {
+            return false;
+        }
+        $("#delBeiti").modal('show')
+        $('#delBtId').val(planId);
+        $('#bt-body').html('');
+        $("body").mLoading({
+            text: '加载中'
+        });
+        $.get("{:Url('Ledplan/getDeleteBtReason')}", {
+            planId: planId
+        }, function(data) {
+            if (data.code == '000') {
+                let str = '';
+                $(data.aaData).each(function(i, item) {
+                    str += "<tr><td>" + (item.kickTime) + "</td><td>" + (item.code) + "</td><td>" + (
+                            item.premisesType) + "</td><td>" + (item.premisesName) + "</td>" +
+                        "<td>" + (item.buildingName) + "</td><td>" + (item.unitName) + "</td><td>" + (
+                            item.elevatorName) + "</td><td>" + (item.line) + "</td>" +
+                        "<td>" + (item.area) + "</td><td>" + (item.pointSize) + "</td><td>" + (item.location) +
+                        "</td><td>" + (item.kickedReason) + "</td></tr>";
+                });
+                $('#delBt-body').html(str);
+                $("body").mLoading('hide');
+                //被踢点位点位编码保存
+                $("#pId").val(planId);
+            }
+
+        }, 'json');
+    }
+
+    function submitExamine($planId) {
+        if (!checkAuth("Ledplan/submitexamine")) {
+            return false;
+        }
+
+        $("body").mLoading({
+            text: '提交中'
+        });
+
+        $.post("{:Url('Ledplan/submitExamine')}", {
+            planId: $planId
+        }, function(data) {
+            if (data.code == 0) {
+                toastr.error(data.msg);
+            } else {
+                toastr.success(data.msg);
+                $("#issend").val('2')
+                $("#cusConfirmNum").val(planId)
+                $('#example1').DataTable().draw(true);
+                $("#issend").val('')
+                $("#cusConfirmNum").val('')
+            }
+            $("body").mLoading('hide');
+        }, 'json');
+    }
+
+    function datedifference(sDate1, sDate2) {
+        var dateSpan,
+            tempDate,
+            iDays;
+        sDate1 = Date.parse(sDate1);
+        sDate2 = Date.parse(sDate2);
+        dateSpan = sDate2 - sDate1;
+        dateSpan = Math.abs(dateSpan);
+        iDays = Math.floor(dateSpan / (24 * 3600 * 1000));
+        return iDays + 1
+    };
+    //弹出导出弹出框
+    $('#export_data').click(function () {
+        var time = $('#searchPlanTime').val();
+        $('#exportBeginTime').val(time+' - '+time);
+        var city = $('#searchPlanCity').val();
+
+        $('#explain').modal('show');
+        $('#exportCity').selectpicker('val',[city]);
+        $('#exportPhotoRequire').selectpicker('val',['']);
+        $('#exportCreateMan').selectpicker('val',['']);
+        $('#exportSaleUser').selectpicker('val',['']);
+        $('#exportType').selectpicker('val',['']);
+        $('#exportStatus').selectpicker('val',['']);
+    })
+    //提交导出按钮
+    function exportPlanSubmit() {
+        if (!checkAuth("Ledplan/export")) {
+            return false;
+        }
+        var condition = $('input:radio[name="exportCondition"]:checked').val();
+        if(condition=='false'){
+            try {
+                var url = "{:url('ledplan/export')}";
+                let param = getPrarms();
+                if (param.beginTime.length == 0 && param.name.length == 0) {
+                    throw "抱歉!请选择开始投放时间或者填写方案名";
+                }
+                if(param.isdelete==true){
+                    throw "被删方案列表不能导出";
+                }
+                param = JSON.stringify(param);
+                $("body").mLoading({
+                    text: '导出中'
+                });
+                var a = document.createElement("a");
+                a.href = url + "?params=" + param;
+                a.click();
+                setTimeout(function() {
+                    $("body").mLoading("hide");
+                }, 5000);
+            } catch (e) {
+                let msg = typeof(e) == "Object" ? JSON.stringify(e) : e;
+                toastr.error(msg);
+            }
+        }else{
+            try {
+                timeFrame = $('#exportBeginTime').val();
+                console.log(timeFrame);
+                timeFrame = timeFrame.split(' - ');
+                console.log(timeFrame);
+                var  beginTime = timeFrame[0];
+                var  endTime = timeFrame[1];
+
+                var url = "{:url('ledplan/export')}";
+                let param = {
+                    'beginTime': beginTime,
+                    'endTime': endTime,
+                    'city': $('#exportCity').val(),
+                    'status': $('#exportStatus').val(),
+                    'type': $('#exportType').val(),
+                    'saleUser': $('#exportSaleUser').val(),
+                    'createMan': $('#exportCreateMan').val(),
+                    'photoRequire': $('#exportPhotoRequire').val(),
+                };
+
+                if (param.beginTime.length == 0) {
+                    throw "抱歉!请选择开始投放时间或者投放城市";
+                }
+                param = JSON.stringify(param);
+                $("body").mLoading({
+                    text: '导出中'
+                });
+                var a = document.createElement("a");
+                a.href = url + "?params=" + param+"&condition=true";
+                a.click();
+                setTimeout(function() {
+                    $("body").mLoading("hide");
+                }, 5000);
+            } catch (e) {
+                let msg = typeof(e) == "Object" ? JSON.stringify(e) : e;
+                toastr.error(msg);
+            }
+
+        }
+    }
+
+  //点击补回点位  这里做的是全部点位 -----后面看需求是否补回指定点位------------------------------------------
+  function returnPointPosition() {
+      if (!checkAuth("Ledplan/returnPointPosition")) {
+          return false;
+      }
+      var planId = $("#pId").val();
+      $("body").mLoading({
+          text: '补回点位中'
+      });
+      $.post("{:Url('Ledplan/returnPointPosition')}", {
+          planId: planId
+      }, function(data) {
+          if (data.code == 0) { //补回失败
+              toastr.error(data.msg);
+          } else {
+              toastr.success(data.msg);
+              //成功后 关闭悬浮弹窗
+              $("#beiti").modal('hide');
+              //列表刷新 -----------------------------------------没做分页-----
+              serachData();
+          }
+          // $("body").mLoading('hide');
+      }, 'json');
+  }
+
+  //查询数据
+  function serachData() {
+      if ($('#searchPlanTime').val() == '' && $('#searchPlanName').val() == '') {
+          toastr.error('开始时间和方案名称不能同时为空，请输入方案名或时间');
+          return false
+      }
+      $("body").mLoading({
+          text: '数据正在加载中'
+      });
+      setTimeout(function() {
+          var table = $('#example1').DataTable();
+          table.draw(true);
+          $("body").mLoading('hide');
+      }, 500)
+  }
+
+
+    $('#onlyDeleted').change(function () {
+
+        if($(this).is(':checked')==false){
+            $('#searchPlanStatus').removeAttr("disabled");
+        }else{
+            $('#searchPlanStatus').attr("disabled", true)
+
+        }
+        if ($('#searchPlanTime').val() == '' && $('#searchPlanName').val() == '') {
+            toastr.error('开始时间和方案名称不能同时为空，请输入方案名或时间');
+            return false
+        }
+        $("body").mLoading({
+            text: '数据正在加载中'
+        });
+        setTimeout(function() {
+            var table = $('#example1').DataTable();
+            table.draw(true);
+            $("body").mLoading('hide');
+        }, 500)
+
+    })
+
+
+    function EditDelete(id,name) {
+        $('#deletePlanId').val(id);
+        $('#deletePlanName').val(name);
+        $('#editDelete').modal('show');
+    }
+
+    function doEditDelete() {
+        var name = $('#deletePlanName').val();
+        var id = $('#deletePlanId').val();
+        if(name==''){
+            toastr.error('方案名称不能为空');
+            return false;
+        }
+        $.post("{:Url('Ledplan/editDeletePlan')}", {
+            planId: id,
+            name: name,
+
+        }, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+                $("body").mLoading('hide');
+            } else {
+                toastr.success(data.msg);
+                $("body").mLoading('hide');
+                $('#editDelete').modal('hide');
+                var table = $('#example1').DataTable();
+                table.draw(false);
+            }
+
+
+        }, 'json');
+
+    }
+
+
+    function reStore(id) {
+        $.post("{:Url('Ledplan/reStore')}", {
+            planId: id,
+
+        }, function(data) {
+
+            if (data.code == 0) {
+                toastr.error(data.msg);
+                $("body").mLoading('hide');
+            } else {
+                toastr.success(data.msg);
+                $("body").mLoading('hide');
+                var table = $('#example1').DataTable();
+                table.draw(false);
+            }
+
+
+        }, 'json');
+    }
+    function exportDeleteMap(id) {
+        $.post("{:Url('Ledplan/exportDeleteMap')}", {
+            planId: id,
+        }, function(data) {
+            if (data.code == 0) {
+                toastr.error(data.msg);
+                $("body").mLoading('hide');
+            } else {
+                $("body").mLoading('hide');
+                window.location.href = data.url;
+            }
+
+        }, 'json');
+
+
+
+    }
+</script>

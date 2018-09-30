@@ -267,8 +267,9 @@ slave-read-only yes
 info replication
 redis-cli -p 6380 info replication
 
-
-
+fork操作：
+1、同步操作
+2、与内存量息息相关：内存
 
 
 
