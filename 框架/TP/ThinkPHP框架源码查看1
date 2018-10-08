@@ -1,0 +1,271 @@
+DIRECTORY_SEPARATOR   /
+$_SERVER['SCRIPT_FILENAME']          -------> 当前执行程序的绝对路径及文件名
+__FILE__                                                 -------> 原始文件（被包含文件）的绝对路径及文件名
+
+获取当前PHP脚本所在目录的绝对路径，dirname(__FILE__) 和 __DIR__都可以实现
+dirname(__FILE__)由两部分组成， __FILE__ 魔术变量和 dirname() 函数。__FILE__是当前脚本的绝对路径，通过 dirname() 函数后，就可以获得脚本所在目录的绝对路径。
+在实现同样功能的情况下，dirname(__FILE__)多了一层函数调用。所以， __DIR__ 比 dirname(__FILE__) 在效率上有优势。
+__FILE__ 和 dirname() 函数从 PHP 4.0.2 就开始启用。
+
+__DIR__ 变量则是 PHP5.3.0 新增的。
+
+所以，如果你的PHP版本大于等于PHP5.3.0，建议使用 __DIR__。否则，最好还是用 dirname(__FILE__)，以确保程序不会出错。
+realpath() 函数返回绝对路径。
+该函数删除所有符号连接（比如 '/./', '/../' 以及多余的 '/'），并返回绝对路径名。
+如果失败，该函数返回 FALSE。
+echo realpath('./../../etc/passwd') . PHP_EOL;  /etc/passwd
+echo realpath('/tmp/') . PHP_EOL;    /tmp
+
+$_SERVER["DOCUMENT_ROOT"]  当前运行脚本所在的根目录。
+填充字符串的右侧，到 20 个字符的新长度：
+
+<?php
+$str = "Hello World";
+echo str_pad($str,20,".");
+?>
+
+计算 "world" 在字符串中出现的次数：
+
+<?php
+echo substr_count("Hello world. The world is nice","world");
+?>
+
+pathinfo() 函数以数组的形式返回关于文件路径的信息。
+
+返回的数组元素如下：
+[dirname]
+[basename]
+[extension]
+
+<?php
+print_r(pathinfo("/testweb/test.txt"));
+?>
+上面的代码将输出：
+
+Array
+(
+[dirname] => /testweb
+[basename] => test.txt
+[extension] => txt
+)
+
+file_exists() 函数检查文件或目录是否存在。
+
+如果指定的文件或目录存在则返回 TRUE，否则返回 FALSE。
+$_SERVER["SCRIPT_FILENAME"]  当前执行脚本的绝对路径。
+$_SERVER["SERVER_NAME"]  输出配置文件httpd.conf中的ServerName，一般情况下与HTTP_HOST值相同，
+但如果服务器端口不是默认的80端口，或者协议规范不是HTTP/1.1时，HTTP_HOST会包含这些信息，
+而SERVER_NAME不一定包含。（主要看配置文件的设置）
+
+比较两个字符串（区分大小写）：
+
+<?php
+echo strcmp("Hello world!","Hello world!");
+?>
+Linux split命令用于将一个文件分割成数个
+
+把字符串 "Hello" 分割到数组中： 长度可选
+
+<?php
+print_r(str_split("Hello"));
+?>
+
+cli模式（命令行）下，第一个参数$_SERVER['argv'][0]是脚本名，其余的是传递给脚本的参数
+is_file
+
+spl_autoload_register()函数的作用
+<?php
+//class1.class.php中
+class class1{
+	public function __construct(){
+		echo "class1";
+	}
+}
+?>
+
+<?php
+//class2.class.php中
+class class2{
+	public function __construct(){
+		echo "class2";
+	}
+}
+?>
+
+<?php
+//class3.class.php中
+class class3{
+	public function __construct(){
+		echo "class3";
+	}
+}
+?>
+<?php
+function __autoload($classname){
+	$filename = "./class/".$classname.".class.php";
+	if(is_file($filename)){
+		include $filename;
+	}
+}
+
+$test1 = new class1();
+echo '<br/>';
+$test1 = new class2();
+echo '<br/>';
+$test1 = new class3();
+
+//结果是
+class1
+class2
+class3
+
+?>
+<?php
+// 写一个loadclass函数
+// loadclass函数不具备自动加载类的功能
+function loadclass($classname){
+	$filename = "./class/".$classname.".class.php";
+	if(is_file($filename)){
+		include $filename;
+	}
+}
+// spl_autoload_register()函数让这个loadclass具备了自动加载类的功能   ************** spl_autoload_register()实际上创建了 autoload 函数的队列，按定义时的顺序逐个执行
+spl_autoload_register("loadclass");
+
+$test1 = new class1();
+echo '<br/>';
+$test1 = new class2();
+echo '<br/>';
+$test1 = new class3();
+?>
+
+get_declared_classes   Returns an array with the name of the defined classes
+property_exists()用于判断对象的属性或方法是否存在
+class_alias — 为一个类创建别名
+strtr() 函数转换字符串中特定的字符
+echo strtr("Hilla Warld","ia","eo");
+is_array
+array_merge 把两个数组合并为一个数组：  相同的后面的覆盖前面的
+$a1=array("a"=>"red","b"=>"green");
+$a2=array("c"=>"blue","b"=>"yellow");
+print_r(array_merge($a1,$a2));
+Array
+(
+    [a] => red
+    [b] => yellow
+    [c] => blue
+)
+preg_replace_callback 函数执行一个正则表达式搜索并且使用一个回调进行替换。 ****
+<?php
+// 将文本中的年份增加一年.
+$text = "April fools day is 04/01/2002\n";
+$text.= "Last christmas was 12/24/2001\n";
+// 回调函数
+function next_year($matches)
+{
+  // 通常: $matches[0]是完成的匹配
+  // $matches[1]是第一个捕获子组的匹配
+  // 以此类推
+  return $matches[1].($matches[2]+1);
+}
+echo preg_replace_callback(
+            "|(\d{2}/\d{2}/)(\d{4})|",
+            "next_year",
+            $text);
+
+?>
+ucfirst() 函数把字符串中的首字符转换为大写。
+lcfirst() 函数把字符串中的首字符转换为小写。
+ucwords() 函数把字符串中每个单词的首字符转换为大写。
+error_reporting() 函数规定报告哪个错误。
+set_error_handler() 函数设置用户自定义的错误处理函数。
+set_exception_handler() 函数设置用户自定义的异常处理函数。
+
+当 PHP 程序出现异常情况，如出现致命错误，超时，或者不可知的逻辑错误导致程序中断，这个时候可以用 register_shutdown_function 进行异常处理。
+比如判断一个脚本是否执行完成，可以设置一个属性为 false，在执行完成时设为 true，最后通过 register_shutdown_function 函数指定的方法进行判断，并做进一步异常处理，如代码所示：
+class IndexController extends Controller
+{
+    /**
+     * 脚本执行是否完成
+     * @var bool
+     */
+    protected $complete = false;
+
+    public function __construct()
+    {
+        register_shutdown_function([$this, 'shutdown']);
+    }
+
+    /**
+     * 异常处理
+     */
+    public function shutdown()
+    {
+        if ($this->complete === false) {
+            dump('www.tanteng.me'); //此处应该输出日志并进行异常处理操作
+        }
+    }
+}
+
+instanceof 用于确定一个 PHP 变量是否属于某一类 class 的实例：
+instanceof也可用于确定一个变量是不是实现了某个接口的对象的实例:
+usleep() 函数延迟执行当前脚本若干微秒（一微秒等于一百万分之一秒）。
+延迟执行当前脚本 5 秒（5000000 纳秒）：
+<?php
+echo date('h:i:s') . "<br>";
+
+//sleep for 5 seconds
+usleep(5000000);
+
+//start again
+echo date('h:i:s');
+?>
+is_string
+array_map() 函数将用户自定义函数作用到数组中的每个值上，并返回用户自定义函数作用后的带有新的值的数组。
+将函数作用到数组中的每个值上，每个值都乘以本身，并返回带有新的值的数组：
+
+<?php
+function myfunction($v)
+{
+return($v*$v);
+}
+$a=array(1,2,3,4,5);
+print_r(array_map("myfunction",$a));
+?>
+Array ( [0] => 1 [1] => 4 [2] => 9 [3] => 16 [4] => 25 )
+array_filter  用回调函数过滤数组中的元素：
+$entry = array(
+             0 => 'foo',
+             1 => false,
+             2 => -1,
+             3 => null,
+             4 => ''
+          );
+
+print_r(array_filter($entry));
+Array
+(
+    [0] => foo
+    [2] => -1
+)
+
+var_dump(array_filter($arr, function($k) {
+    return $k == 'b';
+}, ARRAY_FILTER_USE_KEY));  ****
+
+var_dump(array_filter($arr, function($v, $k) {
+    return $k == 'b' || $v == 4;
+}, ARRAY_FILTER_USE_BOTH));  ****
+array(1) {
+    ["b"]=>
+  int(2)
+}
+array(2) {
+    ["b"]=>
+  int(2)
+  ["d"]=>
+  int(4)
+}
+
+is_scalar — Finds whether a variable is a scalar(变量)
+is_resource — Finds whether a variable is a resource

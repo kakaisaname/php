@@ -36,3 +36,12 @@ $a2=array("e"=>"red","f"=>"green","g"=>"blue");
 $result=array_diff($a1,$a2);
 print_r($result);
 //Array ( [d] => yellow )
+
+$a1=array("a"=>"red","b"=>"green","c"=>"blue","d"=>"yellow");
+$a2=array("a"=>"purple","b"=>"orange");
+array_splice($a1,0,2,$a2);
+print_r($a1);
+//Array ( [0] => purple [1] => orange [c] => blue [d] => yellow )
+
+$arr = ['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4];
+
