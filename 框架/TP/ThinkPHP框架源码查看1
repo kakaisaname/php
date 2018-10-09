@@ -269,3 +269,112 @@ array(2) {
 
 is_scalar — Finds whether a variable is a scalar(变量)
 is_resource — Finds whether a variable is a resource
+parse_ini_string — 解析配置字符串
+simplexml_load_file() 函数转换指定的 XML 文件为 SimpleXMLElement 对象。  (文件)
+simplexml_load_string() 函数转换形式良好的 XML 字符串为 SimpleXMLElement 对象。 （不是文件）
+array_change_key_case() 函数将数组的所有的键都转换为大写字母或小写字母。
+current() 函数返回数组中的当前元素的值。 第一个值
+end() - 将内部指针指向数组中的最后一个元素，并输出。
+next() - 将内部指针指向数组中的下一个元素，并输出。
+prev() - 将内部指针指向数组中的上一个元素，并输出。
+reset() - 将内部指针指向数组中的第一个元素，并输出。
+each() - 返回当前元素的键名和键值，并将内部指针向前移动。
+<?php
+function get_subjects($obj_name)
+{
+    if(!is_object($obj_name))
+    {
+        return(false);
+    }
+    return($obj_name->subjects);
+}
+$obj_name = new stdClass;
+$obj_name->subjects = Array('Google', 'Runoob', 'Facebook');
+var_dump(get_subjects(NULL));
+var_dump(get_subjects($obj_name));
+?>
+bool(false)
+array(3) {
+  [0]=>
+  string(6) "Google"
+  [1]=>
+  string(6) "Runoob"
+  [2]=>
+  string(8) "Facebook"
+}
+
+<?php
+$a = array (1, 2, array ("a", "b", "c"));
+var_export ($a);
+?>
+输出结果为：
+
+array (
+  0 => 1,
+  1 => 2,
+  2 =>
+  array (
+    0 => 'a',
+    1 => 'b',
+    2 => 'c',
+  ),
+)
+uniqid() 函数基于以微秒计的当前时间，生成一个唯一的 ID。
+array_unique() 函数用于移除数组中重复的值。如果两个或更多个数组值相同，只保留第一个值，其他的值被移除
+array_search() 函数在数组中搜索某个键值，并返回对应的键名。
+sprintf() 函数把格式化的字符串写入一个变量中。
+serialize() 函数用于序列化对象或数组，并返回一个字符串。
+序列化是将对象状态转换为可保持或可传输的格式的过程
+JSON，JavaScript Object Notation，一种更轻、更友好的用于接口(AJAX、REST等)数据交换的格式。
+serialize序列化和json序列化：
+ 空间的比较
+serialize在编码后大概是json的1.5倍
+速度的比较
+在较小数据的情况下， serialize比json快数量级。
+在大数据量的情况下，json比serialize稍微差一点
+序列化使用serialize，特别是对象的存储。这是其存在的意义。
+与对象无关的数据存储可以使用json，如包含大量数字的数组等。
+key() 从当前内部指针位置返回元素键名：
+microtime() 函数返回当前 Unix 时间戳的微秒数。
+number_format() 函数通过千位分组来格式化数字。
+reset() 函数将内部指针指向数组中的第一个元素，并输出。
+array_chunk() 函数把一个数组分割为新的数组块。
+array_column() 返回输入数组中某个单一列的值。
+
+addslashes() 函数返回在预定义的字符前添加反斜杠的字符串。
+预定义字符是：
+
+单引号（'）
+双引号（"）
+反斜杠（\）
+NULL
+substr_replace() 函数把字符串的一部分替换为另一个字符串。
+is_callable() 函数用于检测函数在当前环境中是否可调用。
+call_user_func_array—调用回调函数，并把一个数组参数作为回调函数的参数
+mt_rand() 函数使用 Mersenne Twister 算法生成随机整数。
+ord() 函数返回字符串中第一个字符的 ASCII 值。
+func_get_args — 返回一个包含函数参数列表的数组
+function foo()
+{
+    $numargs = func_num_args();
+    echo "Number of arguments: $numargs<br />\n";
+    if ($numargs >= 2) {
+        echo "Second argument is: " . func_get_arg(1) . "<br />\n";
+    }
+    $arg_list = func_get_args();
+    for ($i = 0; $i < $numargs; $i++) {
+        echo "Argument $i is: " . $arg_list[$i] . "<br />\n";
+    }
+}
+
+foo(1, 2, 3);
+?>
+以上例程会输出：
+
+Number of arguments: 3<br />
+Second argument is: 2<br />
+Argument 0 is: 1<br />
+Argument 1 is: 2<br />
+Argument 2 is: 3<br />
+intval() 函数用于获取变量的整数值。
+get_class — 返回对象的类名
