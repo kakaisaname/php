@@ -1,0 +1,483 @@
+一、docker安装
+阿里云的安装  （地址：https://help.aliyun.com/document_detail/60742.html）
+CentOS 7 (使用yum进行安装)
+# step 1: 安装必要的一些系统工具
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+# Step 2: 添加软件源信息
+sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+# Step 3: 更新并安装Docker-CE
+sudo yum makecache fast
+sudo yum -y install docker-ce
+# Step 4: 开启Docker服务
+sudo service docker start
+# 注意：
+# 官方软件源默认启用了最新的软件，您可以通过编辑软件源的方式获取各个版本的软件包。例如官方并没有将测试版本的软件源置为可用，您可以通过以下方式开启。同理可以开启各种测试版本等。
+# vim /etc/yum.repos.d/docker-ee.repo
+#   将[docker-ce-test]下方的enabled=0修改为enabled=1
+#
+# 安装指定版本的Docker-CE:
+# Step 1: 查找Docker-CE的版本:
+# yum list docker-ce.x86_64 --showduplicates | sort -r
+#   Loading mirror speeds from cached hostfile
+#   Loaded plugins: branch, fastestmirror, langpacks
+#   docker-ce.x86_64            17.03.1.ce-1.el7.centos            docker-ce-stable
+#   docker-ce.x86_64            17.03.1.ce-1.el7.centos            @docker-ce-stable
+#   docker-ce.x86_64            17.03.0.ce-1.el7.centos            docker-ce-stable
+#   Available Packages
+# Step2: 安装指定版本的Docker-CE: (VERSION例如上面的17.03.0.ce.1-1.el7.centos)
+# sudo yum -y install docker-ce-[VERSION]
+安装校验
+root@iZbp12adskpuoxodbkqzjfZ:$ docker version
+Client:
+Version:      17.03.0-ce
+API version:  1.26
+Go version:   go1.7.5
+Git commit:   3a232c8
+Built:        Tue Feb 28 07:52:04 2017
+OS/Arch:      linux/amd64
+Server:
+Version:      17.03.0-ce
+API version:  1.26 (minimum version 1.12)
+Go version:   go1.7.5
+Git commit:   3a232c8
+Built:        Tue Feb 28 07:52:04 2017
+OS/Arch:      linux/amd64
+Experimental: false
+
+二、安装镜像加速器
+https://cr.console.aliyun.com/cn-qingdao/mirrors  有为您独立分配的加速地址
+有以下命令：
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+"registry-mirrors": ["https://u6px9vyx.mirror.aliyuncs.com"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+三、获取镜像
+docker pull
+如：1、docker pull nginx  2、docker run -d -p 80:80 --name webserver nginx  就可以在网上看到nginx的界面了
+交互式操作：
+docker exec -it 镜像 bash  如：docker exec -it webserver bash  可以修改内容，如：echo '<h1>Hello,Docker!</h1>' > /usr/share/nginx/html/index.html
+退出：exit
+
+四、列出镜像
+docker images
+有none的为虚悬镜像，docker images -f dangling=true 来显示
+docker rmi $(docker images -q -f dangling=true) 来删除，因为已经没有什么意义了
+列出部分镜像,如：docker images ubuntu
+
+五、修改镜像
+docker commit 将容器存储层保存下来成为镜像  慎用！！！
+定制镜像用 dockerfile
+
+六、构建镜像
+什么是Dockerfile？
+Dockerfile是由一系列命令和参数构成的脚本，这些命令应用于拉取的基础镜像并最终创建一个新的镜像，通过Dockerfile我们可以创建一个你需要的镜像，里面是包含了你要安装的软件，相当于是提前定制好要安装的拓展，执行的命令等，然后一键执行，极大地简化操作流程
+在dockerfile文件所在目录执行：
+docker build -t nginx:v3 .
+最后的 . 指定上下文路径，别不是dockerfile的文件路径  ！！！
+docker build 命令构建镜像，其实并非在本地构建，而是在服务端 也就是 Docker 引擎中构建的
+
+docker rmi 删除镜像  docker rm 删除容器
+并非所有的 docker rmi 都会产生删除镜像的行为，有可能仅仅是取消了某个标签而已
+
+七、docker-compose
+安装pip
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip install docker-compose --ignore-installed requests
+
+八、
+查看容器
+查看你已经下载好的镜像
+docker images
+
+查找镜像
+docker search XX
+
+下载镜像
+docker pull xx
+
+删除镜像
+docker rmi xx
+
+开始
+docker run 你的镜像
+
+看日志
+docker logs 你的容器
+
+停止一个容器示例
+docker stop 你的容器
+
+查看容器状态
+docker stats 你的容器
+
+docker-compose 是用来做docker 的多容器控制
+服务更新
+软升级
+$ docker-compose stop wordpress
+停止容器运行
+
+$ docker-compose rm wordpress
+删除老旧的容器
+更新你的 image
+
+$ docker-compose start wordpress
+启动新容器
+还比如
+
+你的 nginx 更新了配置文件之后
+
+docker-compose restart nginx
+
+硬升级
+docker-compose stop
+
+升级你的程序
+
+你要重新
+docker-compose up
+从日志得到需要的信息
+直接使用 logs
+docker-compose logs nginx
+欧 shit 直接给我屏幕刷爆了
+
+使用类似linux tail 命令
+我们的 tial 命令一般是什么样的呢
+tail -f xx.file
+
+我们的docker-compose log 却是这样
+
+root@ubuntu:~# docker-compose logs -f --tail 10 nginx
+
+八、centos安装pecl
+yum install php-pear php-devel
+
+wget XXX -O xxx   -O –output-document=FILE 把文档写到FILE文件中
+
+九、翻墙搭建 ****************************************************************
+docker pull mritd/shadowsocks
+docker run -dt --restart unless-stopped --name ss -p 8888:6443 mritd/shadowsocks -s "-s 0.0.0.0 -p 6443 -m rc4-md5 -k 密码 --fast-open"   密码为自己的
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
