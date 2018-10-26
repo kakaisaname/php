@@ -163,6 +163,17 @@ wget XXX -O xxx   -O –output-document=FILE 把文档写到FILE文件中
 docker pull mritd/shadowsocks
 docker run -dt --restart unless-stopped --name ss -p 8888:6443 mritd/shadowsocks -s "-s 0.0.0.0 -p 6443 -m rc4-md5 -k 密码 --fast-open"   密码为自己的
 
+十、创建网络
+docker network create foo  创建
+docker network list        列出
+
+十一、删除服务器上的PHP
+rpm -qa|grep php
+列出的php
+十、错误处理
+Version in "./docker-compose.yml" is unsupported
+就算你的 docker engine Host 是在 CentOS 上，你在 docker container 裡面執行也不能執行 yum 這是 docker 的基本觀念
+
 
 
 
