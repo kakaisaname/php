@@ -170,6 +170,8 @@ docker run -dt --restart unless-stopped --name ss -p 8888:6443 mritd/shadowsocks
 docker network create foo  创建
 docker network list        列出
 
+docker-compose up -d       后台启动服务
+
 十一、删除服务器上的PHP
 rpm -qa|grep php
 列出的php,然后一一删除（注意前后关系）

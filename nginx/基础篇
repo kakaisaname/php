@@ -1,0 +1,85 @@
+nginx是开源高性能、可靠的HTTP中间件、代理服务
+常见的HTTP服务
+HTTPD IIS GWS NGINX
+
+优势、
+IO多路复用epoll 文件描述符准备好后主动上报
+多个描述符的I/O操作都能在一个线程内并发交替地顺序完成，这就叫I/O多路复用，这里的复用指的是复用同一个线程。
+
+什么是epoll
+IO多路复用的实现方式select、poll、epoll
+select 内核不断的遍历准备好的文件描述符，以准备去唤醒进程来处理，线性扫描效率低下，能够监视文件描述符的数量存在最大限制（1024）
+epoll  每当FD就绪，采用系统的回调函数之间将fd放入,效率更高，最大连接无限制。
+
+
+轻量级：考虑性能优势
+功能模块少，代码模块化
+
+CPU亲和：
+是一种把CPU核心和nginx工作进程绑定方式，把每个worker进程固定在一个cpu上执行，减少切换cpu的cache miss，获得更好的性能
+
+sendfile:
+httpserver 传输文件是要经过内核和用户空间，最终到达socket，通过socket传达给用户，静态文件不许要通过用户空间的
+逻辑性处理，只通过linux（2.2）的零拷贝，内核传递到socket
+
+nginx的安装：
+卸载
+编译时的路径如果指定了--prefix /usr/local/xxx 直接rm -rf /usr/local/xxx即可。
+下载地址：http://nginx.org/en/download.html
+
+----------
+[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/centos/7/$basearch/
+gpgcheck=0
+enabled=1
+
+cd /etc/yum
+vim /etc/yum.repos.d/nginx.repo  填入虚线下的内容
+
+yum install -y nginx
+
+nginx -V 显示编译参数
+rpm ql nginx 可以看到nginx的安装目录
+/etc/logrotate.d/nginx   配置文件   nginx日志轮转，用于logrotate服务的日志切割
+/etc/nginx下的nginx.conf  conf.d/default.conf    目录、配置文件，nginx主配置文件
+/etc/nginx下 fastcgi_params uwsgi_params scgi_params  配置文件  cgi配置相关，fastcgi配置
+/etc/nginx下 mime.types  配置文件  设置http协议的Content-Type与扩展名对应关系
+/usr/lib/systemd/system下  nginx-debug.service，nginx.service  /etc/sysconfig下的 nginx、nginx-debug  配置文件
+用于配置出系统守护进程管理器管理方式
+
+/usr/lib64/nginx/modules  /etc/nginx/modules   目录  nginx模块目录
+/usr/sbin 下 nginx nginx-debug  命令  Nginx服务的启动管理的终端命令
+
+nginx除了做http代理服务，其实也可以做缓存服务  **********
+/var/cache/nginx    目录  nginx的缓存目录
+/var/log/nginx   目录  nginx 的日志目录
+
+nginx默认配置语法
+user                设置nginx服务的系统使用用户
+worker_processes    工作进程数                  //一般和系统核数相同
+error_log           nginx的错误日志
+pid                 nginx服务启动时候的pid
+events  worker_connections  每个进程允许最大连接数（最大65535）   use 工作进程数
+
+systemctl restart nginx.service  重启nginx（修改了配置文件）
+systemctl reload nginx.service  重启nginx（修改了配置文件）
+
+Nginx日志类型：
+error.log  access_log
+
+error.log  warn：代表错误级别
+http 大括号下 配置access_log
+log_format 为日志的信息，nginx变量
+
+
+
+
+
+
+
+
+
+
+
+
