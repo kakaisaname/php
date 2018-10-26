@@ -69,6 +69,9 @@ docker images
 docker rmi $(docker images -q -f dangling=true) 来删除，因为已经没有什么意义了
 列出部分镜像,如：docker images ubuntu
 
+删除所有的容器：docker rm $(docker ps -aq)
+删除所有的镜像：docker rmi $(docker images -q)
+
 五、修改镜像
 docker commit 将容器存储层保存下来成为镜像  慎用！！！
 定制镜像用 dockerfile
@@ -169,8 +172,10 @@ docker network list        列出
 
 十一、删除服务器上的PHP
 rpm -qa|grep php
-列出的php
-十、错误处理
+列出的php,然后一一删除（注意前后关系）
+
+
+十二、错误处理
 Version in "./docker-compose.yml" is unsupported
 就算你的 docker engine Host 是在 CentOS 上，你在 docker container 裡面執行也不能執行 yum 這是 docker 的基本觀念
 
