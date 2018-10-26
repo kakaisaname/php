@@ -179,6 +179,9 @@ rpm -qa|grep php
 Version in "./docker-compose.yml" is unsupported
 就算你的 docker engine Host 是在 CentOS 上，你在 docker container 裡面執行也不能執行 yum 這是 docker 的基本觀念
 
+访问不了PHP文件，
+1、安装netstat
+apt-get install net-tools
 
 
 
