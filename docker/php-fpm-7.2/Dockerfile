@@ -106,4 +106,4 @@ COPY ./conf/supervisor.conf /etc/supervisor/supervisor.conf
 
 EXPOSE 22
 
-CMD ["/usr/sbin/supervisor", "-c", "/etc/supervisor/supervisor.conf"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisor.conf"]
