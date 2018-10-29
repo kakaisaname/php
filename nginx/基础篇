@@ -65,12 +65,235 @@ events  worker_connections  每个进程允许最大连接数（最大65535）  
 systemctl restart nginx.service  重启nginx（修改了配置文件）
 systemctl reload nginx.service  重启nginx（修改了配置文件）
 
+systemctl restart nginx.service 重启nginx  如果错误，一般是端口被占用
+netstat -tpnul 看看端口被哪个进程占用   杀死进程，并重启就可以了
+
+也可以systemctl reload nginx 重启
+
 Nginx日志类型：
 error.log  access_log
 
 error.log  warn：代表错误级别
 http 大括号下 配置access_log
-log_format 为日志的信息，nginx变量
+log_format 为日志的信息，nginx变量  只能是在http模块下
+access_log 后面的main 为log_format的格式
+
+请求模拟： curl -v xxx(地址)
+nginx -t -c （nginx的配置路径）  检查配置是否正确
+nginx -s reload -c (nginx的配置路径) 重新加载配置，重启
+nginx有自己的内置变量，在nginx的官网查看。
+HTTP请求变量： arg_PARAMETER  http_HEADER sent_http_HEADER
+内置变量： Nginx内置的
+自定义变量： 自己定义
+
+----------------------------------------------------Nginx模块学习--------------------------------------------
+Nginx -V 可以看到配置了有哪些模块
+1、--with-http_stub_status_module   Nginx的客户端状态
+stub_status打开这个功能，在server,location下配置
+location /mystatus {
+    stub_status;
+}
+检查配置是否正确：nginx -tc /etc/nginx/nginx.conf
+nginx -s reload -c /etc/nginx/nginx.conf
+访问：http://118.24.61.194/mystatus
+结果：
+Active connections: 1   （nginx当前连接活跃数）
+server accepts handled requests
+4 4 3  （nginx处理的握手次数   连接数  请求数）
+Reading: 0 Writing: 1 Waiting: 0
+
+2、--with-http_random_index_module  目录中选择一个随机主页 （这个模块很少使用）
+Syntax:random_index on | off
+Default:random_index off
+Context:location
+配置：
+location / {
+#root   /usr/share/nginx/html;
+root   /opt/app/code;  （这下面有多个文件，测试用的，刷新页面会随机展示不同的文件内容）
+random_index on;
+#index  index.html index.htm;
+}
+
+3、--with-http_sub_module HTTP内容替换 （这个模块一般也很少用）
+Syntax:sub_filter string replacement
+Default:-
+Context:http,server,location
+
+Syntax:sub_filter_last_modified on | off   (开关，文件有没有改变)
+Default:sub_filter_last_modified off
+Context:http,server,location
+
+Syntax:sub_filter_once on | off   (开关，匹配所有html中内容的第一个还是所有)
+Default:sub_filter_once on
+Context:http,server,location
+
+配置：
+location / {
+    root   /opt/app/code;
+    index  index.html index.htm;
+    {#sub_filter   '<a>imooc' '<a>IMOOC';(将<a>imooc 替换为 <a>IMOOC)#}   这些在配置中是需要的，暂时在这注释
+}
+结果：jeson at IMOOC jeson imooc  只替换了第一个内容
+
+location / {
+    root   /opt/app/code;
+    index  index.html index.htm;
+    {#sub_filter '<a>imooc' '<a>IMOOC';#}
+        sub_filter_once off;  （全局性的替换）
+}
+结果：jeson at IMOOC jeson IMOOC  都替换了
+
+4、Nginx的请求限制
+连接频率限制  limit_conn_module
+请求频率限制  limit_req_module
+
+扩展知识：http协议是建立在tcp协议之上的
+HTTP1.0 tcp不能复用
+HTTP1.1 顺序性tcp复用
+HTTP2.0 多路复用tcp复用
+
+HTTP请求建立在一次TCP连接基础上
+一次TCP请求至少产生一次HTTP请求
+
+连接配置语法：
+Syntax:limit_conn_zone key zone=name:size; （连接限制空间）
+Default:-
+Context:http
+
+Syntax:limit_conn_zone zone number;  （限制并发的个数）
+Default:-
+Context:http,server,location
+
+请求配置语法：
+Syntax:limit_req_zone key zone=name:size rate=rate; （请求限制空间）
+Default:-
+Context:http
+
+Syntax:limit_req zone=name [burst=number] [nodelay];
+Default:-
+Context:http,server,location
+
+配置：
+在server外：
+limit_conn_zone $binanry_remote_addr zone=conn_zone:1m;
+limit_req_zone $binanry_remote_addr zone=req_zone:1m rate=1r/s;  大小1M，数率每秒一个
+
+压测：
+ab -n 40 -c 20 http://118.24.61.194/1.html
+
+Write errors:           0
+Total transferred:      11360 bytes
+HTML transferred:       6480 bytes
+Requests per second:    5190.09 [#/sec] (mean)  （每秒完成5190.09个请求）
+Time per request:       3.853 [ms] (mean)
+Time per request:       0.193 [ms] (mean, across all concurrent requests)
+Transfer rate:          1439.44 [Kbytes/sec] received
+
+配置的不同情况：
+location / {
+    root   /opt/app/code;
+    index  index.html index.htm;
+    limit_req zone=req_zone;
+}
+压测：ab -n 40 -c 20 http://118.24.61.194/1.html
+Complete requests:      40   （完成了40次）
+Failed requests:        39    （失败了39次）
+
+查看错误日志：tail -f /var/log/nginx/error.log
+155 limiting requests, excess: 0.993 by zone "req_zone", client: 118.24.61.194, server: localhost, request: "GET /1.html HTTP/1.0", host: "118.24.61.194"
+说明limit模块生效了，  ************
+
+location / {
+root   /opt/app/code;
+index  index.html index.htm;
+limit_req zone=req_zone burst=3 nodelay;  (burst=3) 3个请求延迟请求，超过访问速率，延迟请求对客户端起到访问限速的作用，其他的直接返回
+}
+
+压测：ab -n 40 -c 20 http://118.24.61.194/1.html
+Complete requests:      40   （完成了40次）
+Failed requests:        36    （失败了36次）
+
+
+location / {
+    root   /opt/app/code;
+    index  index.html index.htm;
+    limit_conn conn_zone 1;  （连接限制，服务端同一时刻只有一个连接过来）
+}
+压测：ab -n 40 -c 20 http://118.24.61.194/1.html
+Complete requests:      40   （完成了40次）
+Failed requests:        0    （失败了36次）
+
+失败的次数为0或很少，得出连接的限制会小一些。因为多次的请求可以建立在一次的连接之上  ***********************
+
+
+5、Nginx的访问控制
+基于IP的访问控制   http_access_module
+基于用户的信任登录  http_auth_basic_module
+
+http_access_module:
+Syntax:allow address |CIDR|unix:|all ;  (允许访问的)
+Default:-
+Context:http,server,location,limit_except
+
+Syntax:deny address |CIDR|unix:|all ;  （拒绝访问的）
+Default:-
+Context:http,server,location,limit_except
+
+www.ip138.com查看自己电脑的ip,查到自己的ip为222.211.213.142
+配置：
+location ~ ^/admin.html {  //模式匹配，访问xxx/admin.html 这样的
+    root   /opt/app/code;
+    deny   222.211.213.142; （自己的ip拒绝访问）
+    allow  all;             （允许其他的ip来访问）
+    index  index.html index.htm;
+}
+
+
+location ~ ^/admin.html {
+    root   /opt/app/code;
+    allow  222.211.213.0/24; （自己的ip允许访问） 这里是一个ip段
+    deny  all;                （拒绝其他ip的访问）
+    index  index.html index.htm;
+}
+
+6、http_access_module局限性
+如果请求中间有如nginx的代理，那nginx中 remote_addr就不准确了，就为代理的ip
+
+解决方法：
+一、x_forwarded_for则会显示客户端，代理的ip地址  如：x_forwarded=IP1,IP2   可以被修改
+二、结合geo模块作
+三、通过HTTP自定义变量传递 *
+
+7、http_auth_basic_module  基于用户的信任登录
+
+Syntax:auth_basic string | off;
+Default:auth_basic off;
+Context:http,server,location,limit_except
+
+Syntax:auth_basic_user_file file;  //文件为存储用户名登录信息  在nginx的官网中可以查看
+Default:-;
+Context:http,server,location,limit_except
+
+生成密码文件：
+安装htpasswd
+htpasswd -c ./auth_conf caoyi  输入密码
+得到这样的内容：caoyi:$apr1$TwndfK.E$ldCggPt6WGVsKMe12k/fm0
+
+location ~ ^/admin.html {
+    root   /opt/app/code;
+    auth_basic "Auth access test!input your passward!";  //访问时会有弹出框 输入用户名和密码
+    auth_basic_user_file /etc/nginx/auth_conf;           //用户名和密码的文件地址
+    index  index.html index.htm;
+}
+
+缺点：
+一、用户信息依赖文件方式
+二、操作管理机械，效率低下
+
+解决：
+一、Nginx结合LUA实现高效验证
+二、Nginx和LDAP打通，利用nginx-auth-ldap模块
+
 
 
 
