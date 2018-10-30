@@ -1,0 +1,557 @@
+常见Nginx中间架构：
+一、静态资源WEB服务
+二、代理服务
+三、负载均衡调度器SLB
+四、动态缓存
+
+静态资源类型：非服务器动态运行生成的文件
+静态资源服务场景：CDN  传输延迟的最小化
+
+一、静态资源WEB服务
+1、文件读取
+配置语法：sendfile
+Syntax:sendfile on | off;
+Default:sendfile off;
+Context:http,server,location,if in location
+
+引读：--with-file-aio 异步文件读取
+
+配置语法:tcp_nopush
+Syntax:tcp_nopush on | off;
+Default:tcp_nopush off;
+Context:http,server,location
+作用：sendfile开启的情况下，提高网络包的传输效率
+
+配置语法:tcp_nodelay
+Syntax:tcp_nodelay on | off;
+Default:tcp_nodelay off;
+Context:http,server,location
+作用：keepalive连接下，提高网络包的传输实时性
+
+配置语法-压缩
+Syntax:gzip on | off;
+Default:gzip off;
+Context:http,server,location,if in location
+作用：压缩传输，减少文件大小，带宽的消耗
+
+压缩比：(耗服务端的性能)
+Syntax:gzip_comp_level level;
+Default:gzip_comp_level 1;
+Context:http,server,location
+
+压缩协议版本：
+Syntax:gzip_http_version 1.0|1.1;
+Default:gzip_http_version 1.1;
+Context:http,server,location
+
+扩展Nginx压缩模块：
+http_gzip_static_module 预读gzip功能
+http_gunzip_module 应用支持gunzip的压缩方式（很少使用）
+
+具体配置：
+图片压缩：
+location ~ .*\.(jpg|gif|png)$ {
+    gzip on;    //开启压缩
+    gzip_http_version 1.1;
+    gzip_comp_level 2;
+    gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
+    root /opt/app/code/images;
+}
+
+文件压缩：文件压缩的效果比较好
+location ~ .*\.(txt|xml)$ {
+    gzip on;
+    gzip_http_version 1.1;
+    gzip_comp_level 1;
+    gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
+    root /opt/app/code/doc;
+}
+
+预先压缩好：在服务端先通过 gzip xxx，先压缩好为 xxx.gz, 访问会直接下载下来，好处是不会实时的压缩
+location ~ ^/download {
+    gzip_static on;
+    tcp_nopush on;
+    root /opt/app/code;
+}
+
+2、浏览器缓存
+HTTP协议定义的缓存机制 （如：Expires;Cache-control等）
+第一次浏览器是无缓存的，请求服务器，缓存在客户端
+第二次请求，本地有缓存，校验是否过期，过期了去服务器重新请求，未过期就用缓存
+
+校验过期机制：
+校验是否过期：                 Expires(1.0版本) Cache-Control(max-age) 1.1版本
+协议中Etag头信息校验：          Etag （一串特殊的字符串，优先校验）
+Last-Modified头信息校验：      Last-Modified (具体的时间，用于和服务端进行校验)
+
+有缓存，服务端返回304，无缓存返回200
+
+配置语法 expires   ********
+添加Cache-Control 、 Expires头
+Syntax:expires [modified] time;
+        expires epoch | max | off;
+Default:expires off;
+Context:http,server,location,if in location
+
+具体配置：
+location ~ .*\.(html|htm)$ {
+    #expires 24h;    ***
+    root /opt/app/code;
+}
+请求一个html文件，第一次返回200，
+第二次为304，Cache-Control: max-age=0（浏览器段自己加进去的） 表示每次都会去服务端进行一次校验，Last-Modified是否有更新，有返回200，无更新返回304
+
+location ~ .*\.(html|htm)$ {
+    expires 24h;  *** 这次加入缓存时间为24h
+    root /opt/app/code;
+}
+返回304，Response-Header中Cache-Control: max-age=86400，request-Header中Cache-Control: max-age=0(实时的去服务端进行校验)
+
+二、跨域访问
+浏览器禁止跨域访问，因为不安全，容易引起CSRF攻击
+Nginx处理：
+Syntax:add_header name value [always];
+Default:-;
+Context:http,server,location,if in location
+
+Access-Control-Allow-Origin
+具体配置：
+location ~ .*\.(html|htm)$ {
+    add_header Access-Control-Allow-Origin http://www.test.com; //具体允许跨域访问的站点
+    add_header Access-Control-Allow-Methods GET,POST,PUT,DELETE,OPTIONS;
+    root /opt/app/code;
+}
+
+三、防盗链
+目的：防止资源被盗用
+首要方式：区别哪些请求是非正常的用户请求
+
+http_refer防盗链模块:
+Syntax:valid_referers none | blocked | server_names | string ...;
+Default:-;
+Context:http,server,location
+
+具体配置：
+location ~ .*\.(jpg|gif|png)$ {
+    gzip on;
+    gzip_http_version 1.1;
+    gzip_comp_level 4;
+    gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
+    valid_referers none blocked 118.24.61.194 ~/google\./;   --------  也可以支持正则匹配
+    if ($invalid_referer) {                      --------
+        return 403;                              --------
+    }
+    root /opt/app/code/images;
+}
+
+
+
+curl -I http://118.24.61.194/1.png
+HTTP/1.1 200 OK
+Server: nginx/1.14.0
+
+curl -e "http://www.baidu.com" -I http://118.24.61.194/1.png  //从百度访问过去，防盗链产生作用
+HTTP/1.1 403 Forbidden
+Server: nginx/1.14.0
+
+四、代理服务
+正向代理：为客户端服务
+反向代理：为服务端服务
+区别代理的对象不一样
+
+Syntax:proxy_pass URL;
+Default:-;
+Context:location,if in location,limit_except
+
+反向代理的配置：
+location ~ /test_proxy.html$ {   //匹配到这样结尾的就转向到8080端口
+    proxy_pass http://127.0.0.1:8080;
+}
+
+正向代理配置：
+location / {
+    if ( $http_x_forwarded_for !~* "^180\.76\.103\.148") {  //只允许请求ip是 这个的访问
+    return 403;
+    }
+    root   /opt/app/code;
+    index  index.html index.htm;
+}
+去请求ip的服务器下设置：
+resolver 8.8.8.8;
+location / {
+    proxy_pass http://$http_host$request_uri;
+}
+
+五、其他配置语法
+缓冲区：尽可能手机文件信息，之后再一次性返回，减少IO的开销
+Syntax:proxy_buffering on | off;
+Default:proxy_buffering on;
+Context:http,server,location
+扩展：proxy_buffer_size、proxy_buffers、proxy_busy_buffers_size
+
+跳转重定向：
+Syntax:proxy_redirect default;
+proxy_redirect off;proxy_redirect redirect replacement;
+Default:proxy_redirect default;
+Context:http,server,location
+
+头信息：(常用) 安全性等
+Syntax:proxy_set_header field value;
+Default:proxy_set_header Host $proxy_host;
+        proxy_set_header Connection close;
+Context:http,server,location
+扩展：proxy_hide_header、proxy_set_body
+
+等等 。。。。
+
+常用代理配置：
+location / {
+    proxy_pass      http://127.0.0.1:8080;
+
+    //下面的部分可以提取出来，写在一个公共的文件中(在conf.d同级目录) 如：proxy_params   下面  include proxy_params
+    proxy_redirect  default;
+
+    proxy_set_header Host   $http_host; //host
+    proxy_set_header X-Real-IP $remote_addr; //用户真实ip
+
+    proxy_connect_timeout 30; //tcp连接限制
+    proxy_send_timeout      60;
+    proxy_read_timeout      60;
+
+    proxy_buffer_size       32k; //响应头大小
+    proxy_buffering         on;
+    proxy_buffers   4 128k;
+    proxy_busy_buffers_size 256k;
+    proxy_max_temp_file_size        256k; //临时文件最大大小
+    index  index.html index.htm;
+}
+
+六、负载均衡服务
+GSLB、SLB 两种方式
+nginx就是一个典型的SLB
+
+按照网络模型：四层负载均衡，七层负载均衡
+四层：tcp、ip的包转发，性能好
+七层：应用层服务，如：头信息的改写等
+nginx就是一个典型的七层负载均衡。
+
+基于LVS的中间件架构:
+Syntax:upstream name {...};
+Default:-;
+Context:http  **** //在http中配置
+
+具体配置：
+#负载均衡服务
+upstream imooc {  ************************* //访问另外一台服务器，也可以访问本机
+    server 118.24.61.194:8001;
+    server 118.24.61.194:8002;
+    server 118.24.61.194:8003;
+}
+server {
+    listen 80 default;
+    server_name localhost;
+
+    root /data/www;
+    index index.php index.html index.htm;
+    #resolver 8.8.8.8;
+    location / {
+    #        try_files $uri $uri/ /index.html;
+    #        proxy_pass http://118.24.61.194$request_uri;
+    proxy_pass http://imooc;                                       ***********
+    proxy_redirect  default;
+
+    proxy_set_header Host   $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+
+    proxy_connect_timeout 30;
+    proxy_send_timeout      60;
+    proxy_read_timeout      60;
+
+    proxy_buffer_size       32k;
+    proxy_buffering         on;
+    proxy_buffers   4 128k;
+    proxy_busy_buffers_size 256k;
+    proxy_max_temp_file_size        256k;
+    index  index.html index.htm;
+    }
+。。。。。。。。
+}
+上面是轮询每个端口
+iptables -I INPUT -p tcp --dport 8002 -j DROP //关掉8002端口
+8002端口不轮询了，只有8001,8003了
+iptables -F 清理对应的规则
+
+upstream 举例：
+upstream backend {
+    server backend1.example.com     weight=5;  //weight 权重，越大，分配几率越高
+    server backend2.example.com:8080;
+    server unix:/tmp/backend3;
+
+    server backend1.example.com:8080 backup;
+    server backend2.example.com:8080 backup;
+}
+
+后端服务器在负载均衡调度中的状态：
+down        当前的server暂时不参与负载均衡
+backup      预留的备份服务器
+max_fails   允许请求失败的次数
+fail_timeout 经过max_fails 失败后，服务暂停的时间
+max_conns   限制最大的接收的连接数
+
+upstream imooc {  //这样的配置 就只有8003能够提供服务，8002备份服务器
+    server 118.24.61.194:8001 down;
+    server 118.24.61.194:8002 backup;
+    server 118.24.61.194:8003 max_fails=1 fail_timeout=10s;
+}
+
+
+Nginx调度算法： ****
+轮询              按时间顺序逐一分配到不同的后端服务器
+加权轮询           weight值越大，分配到的访问几率越高
+ip_hash           每個请求按访问IP的hash结果分配，这样来自同一个IP的固定访问一个后端服务器
+url_hash          按照訪問的URL的hash结果来分配请求，是每个URL定向到同一个后端服务器
+least_conn        最少链接数,那个机器连接数少就分发
+hash关键数值        hash自定义的key
+
+#负载均衡服务
+upstream imooc {
+    ip_hash;           //根据ip来分配，始终定位到一台服务器上  $remote_addr   劣势，如果是走代理的话，不是真实的ip
+    server 118.24.61.194:8001;
+    server 118.24.61.194:8002;
+    server 118.24.61.194:8003;
+}
+
+更友好的方式：url_hash   1.7.2版本之后
+Syntax:hash key [consistent];
+Default:-;
+Context:upstream
+
+
+#负载均衡服务
+upstream imooc {
+    hash $request_uri;  //根据请求地址，实际应用中可能有多个参数，如果需要具体的根据某个参数，用正则提取出来
+    server 118.24.61.194:8001;
+    server 118.24.61.194:8002;
+    server 118.24.61.194:8003;
+}
+
+七、代理缓存
+Syntax:proxy_cache_path path [levels=levels]
+[use_temp_path=on|off] keys_zone=name:size .....;
+Default:-;
+Context:http
+
+配置语法：
+Syntax:proxy_cache zone | off;
+Default:proxy_cache off;
+Context:http,server,location
+
+缓存过期周期
+Syntax:proxy_cache_valid [code ...] time;
+Default:-;
+Context:http,server,location
+
+缓存的维度
+Syntax:proxy_cache_key string;
+Default:proxy_cache_key $scheme$proxy_host$request_uri;
+Context:http,server,location
+
+具体配置：
+#负载均衡服务
+upstream imooc {
+    server 118.24.61.194:8001;
+    server 118.24.61.194:8002;
+    server 118.24.61.194:8003;
+}
+//下面参数都可以自己设置 /opt 缓存目录 缓存key 10M 最大缓存10G 不活跃的60min中，淘汰
+proxy_cache_path /opt levels=1:2 keys_zone=imooc_cache:10m max_size=10g inactive=60m use_temp_path=off;   ***
+server {
+    listen 80 default;
+    server_name localhost;
+
+    root /data/www;
+    index index.php index.html index.htm;
+    #resolver 8.8.8.8;
+    location / {
+    #        try_files $uri $uri/ /index.html;
+    #        proxy_pass http://118.24.61.194$request_uri;
+    proxy_pass http://imooc;
+    proxy_cache imooc_cache;          //缓存 zone,对应server外的zone
+    proxy_cache_valid 200 304 12h;    //缓存时长
+    proxy_cache_valid any 10m;        //同上
+    proxy_cache_key $host$uri$is_args$args;
+    add_header      Nginx-Cache     "$upstream_cache_status";
+
+    proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+    proxy_set_header Host   $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+
+    proxy_connect_timeout 30;
+    proxy_send_timeout      60;
+    proxy_read_timeout      60;
+
+    proxy_buffer_size       32k;
+    proxy_buffering         on;
+    proxy_buffers   4 128k;
+    proxy_busy_buffers_size 256k;
+    proxy_max_temp_file_size        256k;
+    index  index.html index.htm;
+    }
+}
+
+让部分页面不缓存，如登录页面等
+Syntax:proxy_no_cache string;
+Default:-;
+Context:http,server,location
+
+//配置不缓存的规则
+if ($request_uri ~ ^/(url3|login|register|password\/reset)) {  //对应url地址。。。。
+    set $cookie_nocache 1;        // $cookie_nocache
+}
+
+location / {
+    proxy_pass http://imooc;
+    proxy_cache imooc_cache;
+    proxy_cache_valid 200 304 12h;
+    proxy_cache_valid any 10m;
+    proxy_cache_key $host$uri$is_args$args;
+    proxy_no_cache $cookie_nocache;               //  proxy_no_cache $cookie_nocache
+}
+
+
+八、大文件分片请求
+优势：每个子请求收到的数据都会形成一个独立文件，一个请求断了，其他请求不受影响
+
+缺点：当文件很大或者slice很小的时候，可能导致文件描述符耗尽等情况
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
