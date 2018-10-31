@@ -1,0 +1,410 @@
+一、动静分离
+通过中间件将动态请求和静态请求分离
+为什么：分离资源，减少不必要的请求消耗，减少请求延时
+
+二、rewrite规则
+场景
+1、URL 访问跳转，支持开发设计
+    页面跳转、兼容性支持，展示效果等
+2、SEO优化
+3、维护
+    后台维护、流量转发等
+4、安全
+    伪静态
+
+配置语法：
+Syntax:rewrite regex replacement [flag];
+Default:-;
+Context:server,location,if(if的判断表达式里)
+
+例子：rewrite ^(.*)$ /pages/maintain.html break; //所有的请求都指向/pages/maintain.html（网站维护等可用） break为标识符
+
+flag:
+last            停止rewrite检测，但会建立一次重新的请求
+break           停止rewrite检测
+redirect        返回302临时重定向,地址栏会显示跳转后的地址
+permanent       返回301永久重定向,地址栏会显示跳转后的地址
+
+具体配置： last break
+root /opt/app/code;
+location ~ ^/break {
+    rewrite ^/break /test/ break;  // /opt/app/code 下没有test目录就会返回404
+}
+
+location ~ ^/last {
+    rewrite ^/last /test/ last;  // /opt/app/code 下没有test目录,就会访问 /test/ ,下面/test/配置有,返回json数据
+}
+
+location /test/ {
+    default_type application/json;
+    return 200 '{"status":"success"}'; //返回json数据
+}
+
+
+具体配置： redirect permanent
+location ~ ^/imooc {
+    rewrite ^/imooc http://www.imooc.com/ permanent;  //永久重定向到慕课网
+    #rewrite ^/imooc http://www.imooc.com/ redirect;  //临时重定向到慕课网
+}
+
+通过curl -vL http://118.24.61.194/last/ 访问可以看到重定向了，先返回302
+关闭nginx     nginx -s reload -c /etc/nginx/nginx.conf
+启动nginx     nginx -c /etc/nginx/nginx.conf
+
+location / {
+    rewrite ^/course-(\d+)-(\d+)-(\d+)\.html$ /course/$1/$2/course_$3.html break;  //匹配如 http://118.24.61.194/course-11-22-33.html 访问/course/11/22/course_33.html文件
+    if ($http_user_agent ~* Chrome) {  //如果浏览器为谷歌
+        rewrite ^/nginx http://coding.imooc.com/class/121.html redirect; //开始为nginx的，重定向到慕课网的nginx的课程
+    }
+    if (!-f $request_filename) {  //如果请求的文件不存在
+        rewrite ^/(.*)$ http://www.baidu.com/$1 redirect; //则跳转到百度  https://www.baidu.com/search/error.html
+    }
+    index  index.html index.htm;
+}
+
+rewrite规则优先级：依次降低
+    执行server块的rewrite指令
+    执行location匹配
+    执行选定的location中的rewrite
+
+优雅的rewrite规则书写：
+    server {
+        listen      80;
+        server_name     nginx.org;
+        rewrite     ^ http://www.nginx.org$request_uri?;
+    }
+
+Nginx的高级模块：
+secure_link_module模块
+1、制定并允许检查请求的链接的真实性以及保护资源免遭未经授权的访问
+2、限制链接生效周期
+配置语法：
+Syntax:secure_link expression;
+Default:-;
+Context:http,server,location
+
+Syntax:secure_link_md5 expression;
+Default:-;
+Context:http,server,location
+
+首先 nginx -V 查看secure_link模块是否编译了
+
+具体配置：
+location / {
+    secure_link $arg_md5,$arg_expires; //请求md5,expires 参数
+    secure_link_md5 "$secure_link_expires$uri imooc"; //将过期时间，下载文件地址 imooc MD5加密，匹配成功返回相应的状态
+
+    if ($secure_link = "") {
+    return 403;
+    }
+
+    if ($secure_link = "0") {
+    return 401;
+    }
+    index  index.html index.htm;
+}
+
+// 生成下载格式的md5，过期时间的格式，可以通过 PHP，java等去生成  ******
+#!/bin/sh
+#
+#Auth:caoyi
+servername="118.24.61.194"
+download_file="/download/timg.jpg"
+time_num=$(date -d "2018-11-18 00:00:00" +%s) //2018-11-18 过期
+secret_num="imooc"  //加密秘钥  和nginx相同的
+
+//要生成的MD5加密串  MD5  base64  和上面nginx的 secure_link_md5 配置相同
+res=$(echo -n "${time_num}${download_file} ${secret_num}"|openssl md5 -binary | openssl base64 | tr +/ -_ | tr -d =)
+
+//打印下载地址格式
+echo "http://${servername}${download_file}?md5=${res}&expires=${time_num}"
+
+执行这个文件生成：http://118.24.61.194/download/timg.jpg?md5=mzLXyKh7864nkdCCQBi2oA&expires=1542470400
+
+访问这个格式，就会下载相关文件了
+
+geoip_module模块：
+基于IP地址匹配MaxMind GeoIP二进制文件，读取IP所在地域信息
+
+安装模块：yum install -y nginx-module-geoip
+安装成功后在 /etc/nginx/modules目录下可以看到对应的下载文件
+
+http_geoip_module使用场景：
+1、区别国内外作HTTP访问规则
+2、区别国内城市地域作HTTP访问规则
+
+在nginx.conf最上层加载模块：
+load_module "modules/ngx_http_geoip_module.so";
+load_module "modules/ngx_stream_geoip_module.so";
+
+//下载国家和城市地理信息的shell文件
+#!/bin/sh
+wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
+wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
+
+下载下来后 gunzip xxx 解压文件
+可以将解压的两个文件移到/etc/nginx/geoip目录下，也可以不移
+
+在具体配置文件server外添加：
+geoip_country /etc/nginx/geoip/GeoIP.dat;
+geoip_city /etc/nginx/geoip/GeoLiteCity.dat;
+
+location /myip {
+    default_type text/plain;
+    return 200 "$remote_addr $geoip_country_name $geoip_country_code $geoip_city";
+}
+访问：http://118.24.61.194/myip
+返回：222.211.213.142 China CN Chengdu       222.211.213.142是对外的ip
+
+使用场景：
+if ($geoip_country_code != CN) {  如果不是来自中国的访问，返回403  还可以是其他条件
+    return 403;
+}
+
+HTTPS **
+为什么需要HTTP？
+原因：HTTP不安全
+1、传输数据被中间人盗用、信息泄露
+2、数据内容劫持、篡改
+HTTPS协议的实现：
+对传输内容进行加密以及身份验证
+
+对称加密和非对称加密：
+对称加密是加密秘钥和解密秘钥是一样的，
+非对称加密是加密秘钥和解密秘钥是不一样的，公钥用于加密，私钥用于解密，一串公钥对应一串私钥
+
+HTTPS加密协议原理：
+同时用到了对称和非对称加密
+客户端发起SSL连接，服务端保管唯一私钥，服务端发送公钥给客户端，然后客户端发送对称加密（利用返回的公钥加密）
+然后利用对称秘钥传输数据
+但是这也不是绝对安全的，在发起请求是黑客伪装为中间人进行劫持 （中间人伪造客户端和服务端）
+
+如何办：
+HTTPS CA证书，服务端发送CA证书给客户端，不是发送私钥，客户端对数字证书进行CA校验，如果教研成果则利用公钥加密，校验失败则停止会话
+CA证书，服务端和第三方签名机构早就生成了的
+
+证书签名生成CA证书
+1、生成密钥和CA证书
+看看服务器上有没有openssl version
+nginx -V 看看有没有 --with-http_ssl_module 默认是装了的
+
+步骤：
+1、用openssl生成key密钥
+2、生成证书签名请求文件（csr文件） 将密钥，csr文件，公司网站域名及相关信息打包发往签名机构，将返回CA证书
+3、生成证书签名文件（CA文件）
+
+自己生成CA证书：（不好）
+mkdir ssl_key
+openssl genrsa -idea -out caoyi.key 1024   //-idea 对称加密  1024加密位数，位数越高，精度越高
+提示输入密码
+openssl req -new -key caoyi.key -out caoyi.csr  //将刚生成的key生成csr文件
+按照步骤一步步的做
+生成caoyi.csr文件
+openssl x509 -req -days 3650 -in caoyi.csr -signkey caoyi.key -out caoyi.crt  //3650为证书的过期时间
+生成了 caoyi.crt文件了
+
+Nginx的HTTPS语法配置： **
+Syntax:ssl on | off;
+Default:ssl off;
+Context:http,server
+
+Syntax:ssl_certificate file;
+Default:-;
+Context:http,server
+
+Syntax:ssl_certificate_key file;
+Default:-;
+Context:http,server
+
+配置文件：
+server {
+    listen          443;
+    server_name     118.24.61.194 localhost;
+    ssl on;
+    ssl_certificate /etc/nginx/ssl_key/caoyi.crt;
+    ssl_certificate_key /etc/nginx/ssl_key/caoyi.key;
+
+    index index.html index.htm;
+    location / {
+        root /opt/app/code;
+    }
+}
+
+关闭nginx:
+nginx -s stop -c /etc/nginx/nginx.conf  输入密码
+启动：
+nginx -c /etc/nginx/nginx.conf          输入密码
+netstat -luntp|grep 443   看看是否启动了443端口
+
+访问测试：https://118.24.61.194/1.html   ----点高级测试
+
+场景 配置苹过要求的证书
+1、服务器所有的连接使用TLS1.2以上版本（openssl 1.0.2）
+2、HTTPS证书必须使用SHA256以上哈希算法签名
+3、HTTPS证书必须使用RSA 2048位或ECC 256位以上公钥算法
+4、使用前向加密技术
+
+查看签名证书的算法类型：
+openssl x509 -noout -text -in ./caoyi.crt
+
+如果openssl版本低了，网上查看怎么解决
+直接通过key生成crt文件，不用再生成csr文件了
+openssl req -days 36500 -x509 -sha256 -nodes -newkey rsa:2048 -keyout caoyi.key -out caoyi_apple.crt //keyout 不用输入密码
+
+HTTPS服务优化：
+方法一、激活keepalive长连接
+方法二、设置ssl session缓存
+
+keepalive_timeout   100;  //长连接时间
+ssl_session_cache   shared:SSL:10m;   //缓存10M
+ssl_session_timeout 10m;              //过期时间10min
+
+Nginx与Lua开发 ***
+场景：用nginx结合Lua实现代码的灰度发布
+Nginx+Lua优势
+充分的结合Nginx的并发处理epoll优势和Lua的轻量实现简单的功能切高并发的场景
+
+安装：
+yum install -y lua  一般服务器上都有
+lua注释 --（行注释） --[[ 内容--]] 块注释
+
+布尔类型只有nil和false是false，其他都为true
+lua的变量没有特殊说明，都是全局变量
+lua没有++ += 操作
+
+~=（不等于）  字符串的拼接 ..
+
+Nginx+Lua环境搭建
+http://www.imooc.com/article/19597  参考这篇文章
+1、LuaJIT
+
+wget http://luajit.org/download/LuaJIT-2.0.2.tar.gz
+
+make install PREFIX=/usr/local/LuaJIT
+
+export LUAJIT_LIB=/usr/local/LuaJIT/lib
+
+export LUAJIT_INC=/usr/local/LuaJIT/include/luajit-2.0
+
+2、ngx_devel_kit和lua-nginx-module
+
+cd /opt/download
+
+wget https://github.com/simpl/ngx_devel_kit/archive/v0.3.0.tar.gz
+
+wget https://github.com/openresty/lua-nginx-module/archive/v0.10.9rc7.tar.gz
+
+分别解压
+
+3、重新编译编译Nginx
+cd /opt/download
+wget http://nginx.org/download/nginx-1.14.0.tar.gz
+执行解压，后按照如下方式编译：
+./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-compat --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -fPIC' --with-ld-opt='-Wl,-z,relro -Wl,-z,now -pie' --add-module=/downloads/ngx_devel_kit-0.3.0 --add-module=/downloads/lua-nginx-module-0.10.9rc7
+make -j 4 && make install
+
+4、加载lua库，加入到ld.so.conf文件
+echo "/usr/local/LuaJIT/lib" >> /etc/ld.so.conf
+然后执行如下命令：
+ldconfig
+
+
+Nginx调用lua模块指令：
+Nginx的可插拔模块化加载执行，共11个处理阶段
+set_by_lua、set_by_lua_file  设置nginx变量，可以实现复杂的赋值逻辑
+access_by_lua、access_by_lua_file 请求访问阶段处理，用于访问控制
+content_by_lua、content_by_lua_file 内容处理器，接收请求处理并输出响应
+
+Lua调用nginx指令：
+ngx.var         nginx变量
+ngx.req.get_headers     获取请求头
+ngx.req.get_uri_args     获取url请求参数
+ngx.redirect            重定向
+ngx.print               输出响应内容体
+ngx.say                 同ngx.print,但是会最后输出一个换行符
+ngx.header              输出响应头
+
+实战场景 - 灰度发布
+按照一定的关系区别，分不分的代码进行上线，使代码的发布能平滑过渡上线
+举例：
+1、用户的信息cookie等信息区别
+2、根据用户的ip地址
+
+例子：通过ip来让用户访问不同的端口，不同的端口一部分放的是老的代码，一部分放的是要更新的代码
+1、安装memcache  yum -y install memcached
+启动memcache:  memcached -p11211 -u nobody -d
+
+lua获取ip:
+local headers=ngx.req.get_headers()
+local ip=headers["X-REAL-IP"] or headers["X_FORWARDED_FOR"] or ngx.var.remote_addr or "0.0.0.0"
+
+测试：
+location /hello {
+    default_type 'text/plain';
+    content_by_lua 'ngx.say("hello,lua,qiao")';
+}
+
+location /myip {
+    default_type 'text/plain';
+    content_by_lua 'clientIP=ngx.req.get_headers()["X-REAL-IP"] ngx.say("IP:",ngx.var.remote_addr)';
+}
+
+灰度发布演示：
+location / {
+    default_type "text/html";
+    content_by_lua_file /opt/app/lua/dep.lua;
+}
+
+dep.lua文件内容：
+clientIP = ngx.req.get_headers()["X-Real-IP"]   //获取真实IP地址
+if clientIP == nil then
+    clientIP = ngx.req.get_headers()["X_forwarded_for"]
+end
+if clientIP == nil then
+    clientIP = ngx.var.remote_addr
+end
+    local memcached = require "resty.memcached"  //lua调用memcache 的模块
+    local memc,err = memcached:new()
+    if not memc then
+        ngx.say("failed to instantiate memc: ",err)
+        return
+    end
+    local ok,err = memc:connect("127.0.0.1",11211)
+    if not ok then
+        ngx.say("failed to connect: ",err)
+        return
+    end
+    local res,flags,err = memc:get(clientIP)
+    ngx.say("value key: ",res.clientIP)
+    if err then
+        ngx.say("failed to get clientIP ",err)
+        return
+    end
+    if  res == "1" then                                                 //1是memcache中对应ip的值
+        ngx.exec("@server_test")  //执行 server_test模块
+        return
+    end
+    ngx.exec("@server")           //执行server模块
+
+
+直接连接memcache:
+telnet 127.0.0.1  11211
+开始设置值
+
+lua调用memcache 的模块的安装：
+wget https://github.com/agentzh/lua-resty-memcached/archive/v0.11.tar.gz
+tar -zxvf v0.11.tar.gz
+cp -r lua-resty-memcached-0.11/lib/resty  /usr/local/share/lua/5.1/
+
+location @server {
+    proxy_pass http://127.0.0.1:9090;    //老项目在9090端口
+}
+
+location @server_test {
+    proxy_pass http://127.0.0.1:8080;   //要发布的项目 在8080端口  （更改了内容）
+}
+
+
+
+
+
