@@ -403,8 +403,3 @@ location @server {
 location @server_test {
     proxy_pass http://127.0.0.1:8080;   //要发布的项目 在8080端口  （更改了内容）
 }
-
-
-
-
-
