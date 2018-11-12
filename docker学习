@@ -186,6 +186,19 @@ Version in "./docker-compose.yml" is unsupported
 apt-get install net-tools
 
 
+{#//安装redis客户端#}   已经安装了redis了
+{#yum install -y gcc#}
+{#http://download.redis.io/releases/   下载地址#}
+{#wget http://download.redis.io/releases/redis-5.0.0.tar.gz#}
+{#tar xzf redis-5.0.0.tar.gz#}
+{#cd redis-5.0.0#}
+{#make#}
+
+{#cd src#}
+{#./redis-cli#}
+
+
+
 
 
 
