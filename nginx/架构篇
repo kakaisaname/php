@@ -36,14 +36,14 @@ Nginx的alias和root区别：
 location /request_path/image/ {
     root /local_path/image/;
 }
-如果请求的路径为：http://www.imooc.com/request_path/image/cat.png
+如果请求的路径为：http://www.test.com/request_path/image/cat.png
 对应服务器的文件地址为： /local_path/image/request_path/image/cat.png
 
 ----alias----
 location /request_path/image/ {
     alias /local_path/image/;
 }
-如果请求的路径为：http://www.imooc.com/request_path/image/cat.png
+如果请求的路径为：http://www.test.com/request_path/image/cat.png
 对应服务器的文件地址为： /local_path/image/cat.png
 
 用什么样的方法传递用户的真实IP地址

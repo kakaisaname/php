@@ -1,0 +1,342 @@
+TPS：每秒传输的事物处理个数，服务器每秒处理的事务数
+QPS：每秒查询率QPS是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准
+对应fetches/sec，即每秒的响应请求数，也即是最大吞吐能力
+
+QPS与TPS的区别是什么呢？
+
+举个栗子：假如一个大胃王一秒能吃10个包子，一个女孩子0.1秒能吃1个包子，那么他们是不是一样的呢？
+答案是否定的，
+因为这个女孩子不可能在一秒钟吃下10个包子，她可能要吃很久。这个时候这个大胃王就相当于TPS，而这个女孩子则是QPS。虽然很相似，但其实是不同的
+
+系统吞吐量要素：
+
+一个系统的吞吐量（承压能力）与request对CPU的消耗、外部接口、IO等等紧密关联。单个reqeust 对CPU消耗越高，外部系统接口、IO影响速度越慢，系统吞吐能力越低，反之越高。
+
+系统吞吐量几个重要参数：QPS（TPS）、并发数、响应时间
+
+QPS（TPS）：每秒钟request/事务 数量
+
+并发数： 系统同时处理的request/事务数
+
+响应时间： 一般取平均响应时间
+
+最好不要在主库上进行备份 ------------
+
+影响因素：
+1、SQL查询速度
+2、服务器硬件
+3、网卡流量
+4、磁盘I/O
+
+一、超高的QPS和TPS
+风险：效率低下的SQL
+大部分的慢查询都可以通过sql的优化来解决问题
+
+二、大量的并发和超高的CPU使用率
+风险：
+大量的并发：
+    数据库连接数被占满
+    并发量：同一时刻需要数据库服务器需要处理请求数的连接数量
+    连接量：比并发量多得多（Nginx,Apach）,大部分的都是sleep状态
+    mysql中所允许建立的连接数：max_connections配置（默认100）生产服务器可以改的大一些
+超高的cpu使用率：因CPU资源耗尽而出现宕机
+
+三、磁盘IO
+风险：
+磁盘IO性能突然下降（使用更快的磁盘设备）
+其他大量消耗磁盘性能的（计划任务，做好磁盘维护）
+
+四、网卡流量
+如何避免无法连接数据库的情况
+1、减少从服务器的数量 （因为从服务器要去主服务器上复制日志，从服务器越多，流量就越大）
+2、进行分级缓存 （防止前端缓存失效，对服务器造成很大的冲击）
+3、避免使用select * 进行查询（查询出没有必要的列也会浪费大量的流量）
+4、分离业务网络和服务器网络 （。。。）
+
+五、大表
+定义：
+1、记录行数巨大，单表超过千万行
+2、表数据文件巨大，表数据文件超过10G
+
+大表对查询的影响：
+    慢查询：很难在一定的时间内过滤出所需要的数据
+大表对DDL操作的影响：
+风险：
+   一、  Mysql版本<5.5建立索引会锁表
+        Mysql版本>=5.5虽然不会锁表，但会引起主从延迟（因为mysql的复制机制是现在主库上进行，再复制到从库，造成长时间的主从延迟，从而影响正常的业务）
+        所以，在大表上建立索引需要小心
+   二、 修改表结构需要长时间锁表（锁表）
+        会造成长时间的主从延迟 （虽然在mysql5.6版本中支持了多线程复制）
+        影响正常的数据库操作 （如插入数据受到阻塞，使数据库的连接数很快被占满，服务器会出现500错误）
+
+如何处理数据库中的大表：----------
+1、分库分表，把一张大表分成多个小表  （并不适合所有公司进行，需要消耗大量的人力和物力）
+难点：
+    分表主键的选择
+    分表后跨分区数据的查询和统计 （好的分区键只能尽量避免跨分区操作）
+2、大表的历史数据归档 （减少对前后端业务的影响，前端最多增加一个历史数据查询的接口）
+    历史数据可以放在其他的服务器，减少热数据所在服务器的表容量，也减少了核心服务器的查询压力
+难点：
+    归档时间点的选择（不会使用或很少使用的数据）
+    如何进行归档操作
+
+什么是事务：------------------------------
+1、事务是数据库系统区别于其他一切文件系统的重要特性之一
+2、事务是一组具有原子性的SQL语句，或是一个独立的工作单元（要么全部完成，要么全部失败）
+事务特性：  http://www.cnblogs.com/zhoujinyi/p/3437475.html
+    原子性：不可分割的最小单元，要么全部成功，要么全部失败 （如：转账）
+    一致性：事务数据库从一种一致性状态转换到另一种一致性状态，在事物开始前和结束后数据库中数据完整性没有被破坏（如：转账前后的总金额不变）
+    隔离性：一个事务对数据库中数据的修改，在未提交完成前对于其他事务是不可见的
+        show variables like '%iso%'
+        未提交读（不建议）、已提交读（大多数据库支持，mysql除外）、可重复读(当前连接事物改变的数据，其他连接不可获取)、
+        可串行化（隔离级别最高，读取的每一行都加锁），隔离性由低到高，并发性由高到底
+    持久性：一旦事务提交，其所做的修改就会永远保存到数据库中，即使系统崩溃，已经提交的修改数据也不会丢失（相对于数据库来说，数据不会丢失）
+
+真正保证数据不丢失，只有靠数据备份，主从复制这种高可用架构了
+
+什么是大事务：----------------------
+定义：运行时间比较长，操作的数据比较多的事务
+风险：
+    锁定太多的数据，造成大量的阻塞和锁超时
+    回滚所需要时间比较长
+    执行时间长，容易造成主从延迟
+
+如何处理大事务：-------
+1、避免一次处理太多的数据
+2、移出不必要在事务中的SELECT操作
+
+影响性能的因素： ---------------------------------------
+一、硬件（cpu,内存，io）
+二、操作系统、服务器系统
+三、存储引擎
+四、数据库参数配置
+五、数据库结构设计和SQL语句
+
+服务器硬件对性能的影响：
+CPU密集型：更好的CPU
+系统并发量：更多的CPU （web类应用并发量大）
+
+myisam是将索引存入内存，数据在磁盘中
+innodb是索引和数据都存在内存中的 ....
+
+内存对写入和读取都会有好处，越大越好
+
+磁盘的配置和选择： PCIE->SSD->RAID10->磁盘->SAN(优先级由高到低)
+1、传统磁盘（读写慢）
+2、RAID技术（将多个小磁盘组合成大磁盘，RAID0 RAID1 RAID5 RAID10）
+3、固态存储（更好的随机读写性能，可以加强数据库的随机读写，更好的支持并发，但容易损坏 SSD,PCI-E SSD，使用于存在大量随机I/O的场景，解决单线程负载的I/O瓶颈）
+4、网络存储SAN和NAS（数据库备份）
+
+网络对性能的影响：
+1、带宽
+2、质量
+
+Centos系统参数优化： -----------------
+内核相关参数 /etc/sysctl.conf
+net.ipv4.tcp_fin_timeout=10
+...
+
+Mysql体系结构：
+客户端-》Mysql服务层(连接管理器，查询缓存，查询解析，查询优化器)-》存储引擎层
+存储引擎是针对于表的而不是针对于库的（一个库中的不同表可以使用不同的存储引擎）
+
+MySIAM存储引擎：
+mysql5.58及之前默认的存储引擎，由MYD（数据）和MYI（索引）组成，frm（所有引擎都有的，存储表结构）
+并发性和锁级别：表级锁（数据修改时整个表加锁，读取时加共享锁），读写是互斥的，对读写混合的并发性不是很好 *****
+check table tablename  对表进行检查
+repair table tablename 对表进行恢复
+
+特性：
+MyISAM表支持的索引类型（全文索引）
+MyISAM表支持数据压缩  myisampack 强制压缩：myisampack -b -f myIsam.MYI
+对读写的压缩表，只能读不能写 *****
+
+限制：
+版本<5.0默认表大小为4G（一般也不会用这个版本） >5.0为256TB
+适用场景：
+非事务型应用、只读类应用、空间类应用（地理位置），大多数情况还是建议用InnoDB
+
+Innodb存储引擎： ***************************8
+5.5版本后默认存储引擎
+使用表空间进行数据存储，支持事务
+innodb_file_per_table参数 ON:独立表空间，tablename.ibd OFF:系统表空间，ibdataX (X代表一个数字)
+mysql> show variables like 'innodb_file_per_table';
++-----------------------+-------+
+| Variable_name         | Value |
++-----------------------+-------+
+| innodb_file_per_table | ON    |
++-----------------------+-------+
+系统表空间和独立表空间要如何选择：
+5.6前都是存储在系统表空间中
+比较：
+系统表空间无法简单的收缩文件大小(很浪费空间，造成大量磁盘碎片，影响系统性能)，产生IO瓶颈
+独立表空间可以通过optimize table命令收缩系统文件（只从建单表），可以同时向多个文件刷新数据
+建议： ************
+对Innodb使用独立表空间 （5.6后默认）
+
+把原来存于系统表空间中的表转移到独立表空间的方法： **
+1、使用mysqldumo导出所有数据库数据
+2、停止Mysql服务，重建参数，并删除Innodb相关文件
+3、重启mysql服务，重建Innodb系统表空间
+4、重新导入数据
+转移后系统表空间中还存储有Innodb数据字典信息、Undo回滚段
+
+Innodb存储引擎的特性
+    Innodb是一种事务性存储引擎
+    完全支持事务的ACID特性
+    Redo Log(重做日志，实现持久性，帮助已提交事务，顺序写入，存储已提交事务)和Undo Log（存储未提交事务，回滚日志，帮助未提交事务，随机写入）
+    Redo Log，Undo Log 实现了事务的4大特性 *****
+    Innodb支持行级锁，行级锁可以最大程度支持并发，行级锁是由存储引擎层实现的
+
+innodb状态检查：
+show engine innodb status\G;
+
+show variables like 'innodb_log_buffer_size';  //查看日志缓冲区
++------------------------+---------+
+| Variable_name          | Value   |
++------------------------+---------+
+| innodb_log_buffer_size | 2097152 |
++------------------------+---------+
+
+什么是锁：
+锁的主要作用是管理共享资源的并发访问
+锁用于实现事务的隔离性
+
+锁类型：
+共享锁（读锁），多个线程可以同时进行
+独占锁（写锁）
+例子：
+create table `myinnodb`(`id` int(11),`c1` varchar(30)) engine = innodb;
+//插入数据
+insert into myinnodb values(2,'bb'),(3,'cc');
+select * from myinnodb;
++------+------+
+| id   | c1   |
++------+------+
+|    2 | bb   |
+|    3 | cc   |
+//加一个独占锁
+begin(启动事务) ***********8
+update myinnodb set c1='bbbb' where id =2;
+在其他连接中查看相同行的情况：
+select * from myinnodb where id = 2; 可以看到c1还是为bb，并不是为bbbb  ***********
+
+锁的粒度：
+表级锁：开销小，并发性低，有写操作，就会阻塞其他的读写，只有没有写操作，可以多个读，（服务层实现 ******）
+行级锁：
+innodb支持，但是没有使用到索引的时候，还是会用到表级锁  **********
+
+lock table myinnodb write; （给这个innodb表加上了表级的独占锁）
+unlock tables;（解锁）
+具体查看：https://blog.csdn.net/TBWood/article/details/79004523
+
+阻塞和死锁： **************88
+什么是阻塞：阻塞事务占用了被阻塞事务的资源，确保事务可以并发正确运行，大量阻塞表明可能出现了慢查询，造成数据库连接大量堆积，造成性能下降
+死锁：相互占用对方的资源，可按事务处理顺序，索引等来解决
+
+
+show engine innodb status\G;  ****************************
+*************************** 1. row
+Type: InnoDB
+Name:
+Status:
+=====================================
+2018-12-07 10:01:16 0x7f091083d700 INNODB MONITOR OUTPUT
+=====================================
+Per second averages calculated from the last 46 seconds   （最近46秒的统计信息）
+Log sequence number 2535837
+Log flushed up to   2535837
+Pages flushed up to 2535837
+Last checkpoint at  2535828
+0 pending log flushes, 0 pending chkp writes
+53 log i/o's done, 0.00 log i/o's/second
+----------------------
+BUFFER POOL AND MEMORY
+----------------------
+Total large memory allocated 68714496
+Dictionary memory allocated 342967
+Buffer pool size   4095
+Free buffers       3791
+Database pages     304
+Old database pages 0
+Modified db pages  0
+Pending reads      0
+Pending writes: LRU 0, flush list 0, single page 0
+Pages made young 0, not young 0
+0.00 youngs/s, 0.00 non-youngs/s
+Pages read 261, created 43, written 90   **************************读多少，写多少等
+0.00 reads/s, 0.00 creates/s, 0.00 writes/s
+No buffer pool page gets since the last printout
+Pages read ahead 0.00/s, evicted without access 0.00/s, Random read ahead 0.00/s
+LRU len: 304, unzip_LRU len: 0
+I/O sum[0]:cur[0], unzip sum[0]:cur[0]
+
+Innodb使用场景: ***************************************
+适用于大多数OLTP应用，5.7版本后也支持全文索引和空间索引了
+
+CSV存储引擎：
+数据以文本方式存储在文件中，不支持索引，不适合大表，可对数据文件之间编辑，不支持为NULL，每列都为not null
+create table `mycsv` (
+    `id` int(11) not null,
+    `c1` varchar(10) not null,
+    `c2` char(10) not null
+) ENGINE=CSV;
+insert into mycsv values(1,'aaa','bbb'),(2,'ccc','ddd');
+root@instance-20ixr948 mysql]# cd /data/mysql   (在mysql数据存储目录下)
+[root@instance-20ixr948 mysql]# ls
+auto.cnf        ibdata1      ib_logfile1  ibtmp1  mysql-bin.000001  mysql-bin.000003  mysqld_safe.pid  mysql.pid       performance_schema  test
+ib_buffer_pool  ib_logfile0  ib_logfile2  mysql   mysql-bin.000002  mysql-bin.index   mysql-error.log  mysql-slow.log  sys
+[root@instance-20ixr948 mysql]# ls
+auto.cnf        ibdata1      ib_logfile1  ibtmp1  mysql-bin.000001  mysql-bin.000003  mysqld_safe.pid  mysql.pid       performance_schema  test
+ib_buffer_pool  ib_logfile0  ib_logfile2  mysql   mysql-bin.000002  mysql-bin.index   mysql-error.log  mysql-slow.log  sys
+[root@instance-20ixr948 mysql]# ls
+auto.cnf        ibdata1      ib_logfile1  ibtmp1  mysql-bin.000001  mysql-bin.000003  mysqld_safe.pid  mysql.pid       performance_schema  test
+ib_buffer_pool  ib_logfile0  ib_logfile2  mysql   mysql-bin.000002  mysql-bin.index   mysql-error.log  mysql-slow.log  sys
+[root@instance-20ixr948 mysql]# cd test  （在test目录中）
+[root@instance-20ixr948 test]# ls   （出现了mycsv表的）
+db.opt  mycsv.CSM  mycsv.CSV  mycsv.frm  myinnodb.frm  myinnodb.ibd
+
+[root@instance-20ixr948 test]# more mycsv.CSV
+1,"aaa","bbb"
+2,"ccc","ddd"
+[root@instance-20ixr948 test]# vim mycsv.CSV  （可以直接更新表内容）
+flush tables;  刷新下表
+select * from mycsv;  id=3为自己vim改的
++----+-----+-----+
+| id | c1  | c2  |
++----+-----+-----+
+|  1 | aaa | bbb |
+|  2 | ccc | ddd |
+|  3 | eee | ddd |
++----+-----+-----+
+适用场景：
+适合做为数据交换的中间表
+
+Archive存储引擎： ******
+以zlib对表数据进行压缩，磁盘I/O更少
+数据存储在ARZ为后缀的文件中
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

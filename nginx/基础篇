@@ -1,3 +1,7 @@
+nginx 停止： *****
+netstat -anp|grep 80
+kill -QUIT 主进程号
+
 nginx是开源高性能、可靠的HTTP中间件、代理服务
 常见的HTTP服务
 HTTPD IIS GWS NGINX

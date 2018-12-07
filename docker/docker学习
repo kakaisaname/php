@@ -198,6 +198,11 @@ apt-get install net-tools
 {#./redis-cli#}
 
 
+docker ports xx：yy 主机xx端口映射到容器yy端口  ****
+
+docker-compose restart mysql
+
+
 
 
 

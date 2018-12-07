@@ -43,8 +43,8 @@ location /test/ {
 
 具体配置： redirect permanent
 location ~ ^/imooc {
-    rewrite ^/imooc http://www.imooc.com/ permanent;  //永久重定向到慕课网
-    #rewrite ^/imooc http://www.imooc.com/ redirect;  //临时重定向到慕课网
+    rewrite ^/imooc http://www.baidu.com/ permanent;  //永久重定向到慕课网
+    #rewrite ^/imooc http://www.baidu.com/ redirect;  //临时重定向到慕课网
 }
 
 通过curl -vL http://118.24.61.194/last/ 访问可以看到重定向了，先返回302
@@ -92,7 +92,7 @@ Context:http,server,location
 具体配置：
 location / {
     secure_link $arg_md5,$arg_expires; //请求md5,expires 参数
-    secure_link_md5 "$secure_link_expires$uri imooc"; //将过期时间，下载文件地址 imooc MD5加密，匹配成功返回相应的状态
+    secure_link_md5 "$secure_link_expires$uri test"; //将过期时间，下载文件地址 test MD5加密，匹配成功返回相应的状态
 
     if ($secure_link = "") {
     return 403;
@@ -162,7 +162,7 @@ if ($geoip_country_code != CN) {  如果不是来自中国的访问，返回403 
 }
 
 HTTPS **
-为什么需要HTTP？
+为什么需要HTTPS？
 原因：HTTP不安全
 1、传输数据被中间人盗用、信息泄露
 2、数据内容劫持、篡改
@@ -380,7 +380,7 @@ end
         ngx.say("failed to get clientIP ",err)
         return
     end
-    if  res == "1" then                                                 //1是memcache中对应ip的值
+    if  res == "1" then                                                 //1是memcache中对应ip的值 自己预先设置好的
         ngx.exec("@server_test")  //执行 server_test模块
         return
     end
