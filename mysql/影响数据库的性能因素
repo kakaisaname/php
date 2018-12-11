@@ -1,3 +1,27 @@
+启动/停止/重启MySQL
+
+一、启动方式
+
+1、使用 service 启动：service mysqld start
+
+2、使用 mysqld 脚本启动：/etc/init.d/mysqld start
+
+3、使用 safe_mysqld 启动：safe_mysqld&
+
+二、停止
+
+1、使用 service 启动：service mysqld stop
+
+2、使用 mysqld 脚本启动：/etc/init.d/mysqld stop
+
+3、 mysqladmin shutdown
+
+三、重启
+
+1、 使用 service 启动：service mysqld restart
+
+2、使用 mysqld 脚本启动：/etc/init.d/mysqld restart
+
 TPS：每秒传输的事物处理个数，服务器每秒处理的事务数
 QPS：每秒查询率QPS是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准
 对应fetches/sec，即每秒的响应请求数，也即是最大吞吐能力
@@ -313,30 +337,235 @@ select * from mycsv;  id=3为自己vim改的
 适合做为数据交换的中间表
 
 Archive存储引擎： ******
-以zlib对表数据进行压缩，磁盘I/O更少
+以zlib对表数据进行压缩，磁盘I/O更少,比myisam，innodb更加节约存储空间
 数据存储在ARZ为后缀的文件中
+引擎特点： ****
+只支持insert和select操作，支持行级锁和专用的缓冲区。可以实现高并发的插入。
+只允许在自增ID列上加索引
+create table myarchive(
+    id int auto_increment not null,
+    c1 varchar(10),
+    c2 char(10),
+    key(id)
+) engine = archive;
 
+查看myarchive表信息 *****
+cd /data/mysql/test
+ls -lh myarchive.*
+-rw-r----- 1 mysql mysql 8.5K Dec 11 07:59 myarchive.ARZ
+-rw-r----- 1 mysql mysql 8.5K Dec 11 07:59 myarchive.frm  (表结构文件)
 
+插入数据：
+insert into myarchive(c1,c2) values('aa','bb'),('cc','dd');
+查询数据：
+select * from myarchive;
++----+------+------+
+| id | c1   | c2   |
++----+------+------+
+|  1 | aa   | bb   |
+|  2 | cc   | dd   |
+删除数据：(报错，说明不能删除)
+delete from myarchive where id=1;
+ERROR 1031 (HY000): Table storage engine for 'myarchive' doesn't have this option
 
+更新操作：(报错，说明不能更新)
+update myarchive set c1='aaaa' where id =1;
+ERROR 1031 (HY000): Table storage engine for 'myarchive' doesn't have this option
 
+建立索引：(报错，只能在自增列上建立一个索引)
+create index idx_c1 on myarchive(c1);
+ERROR 1069 (42000): Too many keys specified; max 1 keys allowed
 
+使用场景： ***
+日志和数据采集类应用 （个人认为，比较适合日志）
 
+-----------------------------------------------Memory存储引擎：-------------------------------------------
+文件系统存储特点：
+也称HEAP存储引擎，所以数据保存在内存中，数据库重启，表中的数据都会消失，表结构会保留下来
+功能特点：
+支持HASH索引和BTree索引（默认为HASH索引） ***
+HASH索引做等值查询，做范围查询不能用HASH索引，范围查找用BTree索引。
+所有字段都为固定长度 varchar(10)=char(10) **
+不支持BLOG和TEXT等大字段
+引擎使用表级锁，在繁忙的系统中，性能也不一定比innodb好，innodb也会把需要的数据和索引缓存在内存中，innodb访问热数据的话
+也会从内存中读取，且使用的行级锁，比memory支持更大的并发，吞吐量更高
+最大大小由max_heap_table_size参数决定（默认值为16M，修改对已存在的表无效，必须重建才能生效）
+create table mymemory(
+    id int,
+    c1 varchar(10),
+    c2 char(10)
+) engine=memory;
 
+表文件（只有表数据结构文件）
+ls -lh mymemory.*
+-rw-r----- 1 mysql mysql 8.5K Dec 11 08:25 mymemory.frm
+建立索引：
+create index idx_c1 on mymemory(c1); (普通索引)
+create index idx_c2 using btree on mymemory(c2); (btree索引)
 
+显示索引类型： -----
+show index from mymemory\G;
+*************************** 1. row ***************************
+Table: mymemory
+Non_unique: 1
+Key_name: idx_c1
+Seq_in_index: 1
+Column_name: c1
+Collation: NULL
+Cardinality: 0
+Sub_part: NULL
+Packed: NULL
+Null: YES
+Index_type: HASH  （HASH索引）
+Comment:
+Index_comment:
+*************************** 2. row ***************************
+Table: mymemory
+Non_unique: 1
+Key_name: idx_c2
+Seq_in_index: 1
+Column_name: c2
+Collation: A
+Cardinality: NULL
+Sub_part: NULL
+Packed: NULL
+Null: YES
+Index_type: BTREE  （BTREE索引）
+Comment:
+Index_comment:
 
+查看表的状态信息：
+show create table mymemory\G;
+*************************** 1. row ***************************
+Table: mymemory
+Create Table: CREATE TABLE `mymemory` (
+`id` int(11) DEFAULT NULL,
+`c1` varchar(10) DEFAULT NULL,
+`c2` char(10) DEFAULT NULL,
+KEY `idx_c1` (`c1`),               (普通索引)
+KEY `idx_c2` (`c2`) USING BTREE   （BTREE）
+) ENGINE=MEMORY DEFAULT CHARSET=utf8mb4
 
+容易混淆的概念：---------------------------
+memory存储引擎表和临时表
+临时表：
+1、系统使用的临时表（查询优化器优化时使用的，内部临时表），超过限制使用Myisam临时表，未超过限制使用Memory表
+2、create temporary table 建立的临时表，只对当前session可见，可以使用任何的存储引擎
+memory存储引擎表，对所用系统可见，并不是临时表
 
+使用场景：Memory数据易丢失，要求数据可再生 **********************
+用于查找或者映射表，例如邮编和地区的对应表
+用于保存数据分析中产生的中间表
+用于缓存周期性聚合数据的结果表
 
+----------------------------------------------------Federated存储引擎（默认禁止）-----------------------------------
+特点：
+提供了访问远程Mysql服务器上标的方法
+每次访问Federated存储引擎表的时候，查询数据都会被发送到远程服务器执行
+本地不存储数据，数据全部放到远程服务器上
+本地需要保存表结构和远程服务器的连接信息
 
+如何使用：
+默认禁止，启用需要在启动时增加federated参数（这里就不贴出来了）
+mysql://user_name[:password]@host_name[:port_num]/db_name/tbl_name
 
+查看引擎：show engines;   （FEDERATED不支持）
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+| CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
+| MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
+| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
+| PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
+| ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO         |
+| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
+| FEDERATED          | NO      | Federated MySQL storage engine                                 | NULL         | NULL | NULL       |
 
+开启federated引擎支持：
+cd /etc; vim my.cnf
+[mysqld]
+federated=1
 
+重启mysql:
+/etc/init.d/mysqld restart
+Shutting down MySQL....                                    [  OK  ]
+Starting MySQL..                                           [  OK  ]
 
+再次查看，show engines; （FEDERATED存储引擎已经被支持）
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
+| MyISAM             | YES     | MyISAM storage engine                                          | NO           | NO   | NO         |
+| CSV                | YES     | CSV storage engine                                             | NO           | NO   | NO         |
+| MRG_MYISAM         | YES     | Collection of identical MyISAM tables                          | NO           | NO   | NO         |
+| BLACKHOLE          | YES     | /dev/null storage engine (anything you write to it disappears) | NO           | NO   | NO         |
+| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables      | NO           | NO   | NO         |
+| PERFORMANCE_SCHEMA | YES     | Performance Schema                                             | NO           | NO   | NO         |
+| ARCHIVE            | YES     | Archive storage engine                                         | NO           | NO   | NO         |
+| InnoDB             | DEFAULT | Supports transactions, row-level locking, and foreign keys     | YES          | YES  | YES        |
+| FEDERATED          | YES     | Federated MySQL storage engine                                 | NO           | NO   | NO         |
++--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
 
+创建一个远程库：（模拟）
+create database remote;
+Query OK, 1 row affected (0.00 sec)
 
+创建一个表：
+use remote;
+create table remote_fed(
+    id int auto_increment not null,
+    c1 varchar(10) not null default '',
+    c2 char(10) not null default '',
+    primary key(id)
+) engine=innodb;
 
+插入数据：
+insert into remote_fed(c1,c2) values('aaa','bbb'),('ccc','ddd'),('eee','fff');
+查询数据：
+select * from remote_fed;
++----+-----+-----+
+| id | c1  | c2  |
++----+-----+-----+
+|  1 | aaa | bbb |
+|  2 | ccc | ddd |
+|  3 | eee | fff |
 
+//给远程连接用户的权限 **************************（其实是在本地不同库做的演示）
+grant select,update,insert,delete on remote.remote_fed to fred_link@'127.0.0.1' identified by 'Caoyi260027!';
 
+//切换到本地
+use test;
+//保存数据结构和连接信息
+create table remote_fed(
+    id int auto_increment not null,
+    c1 varchar(10) not null default '',
+    c2 char(10) not null default '',
+    primary key(id)
+) engine=federated connection='mysql://fred_link:Caoyi260027!@127.0.0.1:3306/remote/remote_fed';
+//重命名表
+rename table remote_fed to loacal_fed;
 
-
-
+//本地查询 （和远程数据时一样的）
+select * from test.loacal_fed;
++----+-----+-----+
+| id | c1  | c2  |
++----+-----+-----+
+|  1 | aaa | bbb |
+|  2 | ccc | ddd |
+|  3 | eee | fff |
++----+-----+-----+
+//删除表
+delete from test.loacal_fed where id =2;
+//切换到远程库
+use remote;
+//查询数据 select * from remote_fed; （id=2的数据被删除了）
++----+-----+-----+
+| id | c1  | c2  |
++----+-----+-----+
+|  1 | aaa | bbb |
+|  3 | eee | fff |
++----+-----+-----+
+使用场景：  （一般不会用到这种存储引擎） ********
+偶尔的统计分析及手工查询
