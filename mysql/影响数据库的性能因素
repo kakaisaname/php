@@ -643,6 +643,29 @@ select sum(index_length) from information_schema.tables where engine='innodb';
 |            180224 |
 +-------------------+
 
+I/O相关配置参数 -----------------------------------------------------------------
+I/O操作的成本是很高的
+Innodb I/O相关配置：
+Innodb事务写入日志中（顺序写入），然后在写入磁盘，而不是直接随机写入磁盘
+Innodb_log_file_size（控制单个日志文件的大小）
+Innodb_log_files_in_group（控制日志文件的个数）
+事务日志总大小：（最好能记录一个小时的日志量）
+Innodb_log_files_in_group*Innodb_log_file_size
+Innodb_log_buffer_size:控制日志缓冲区的大小（1s的缓冲量 32M或128M就够了）
+Innodb_flush_log_at_trx_commit:刷新日志缓冲区的频率
+0：每秒进行一次log写入cache,并flush log到磁盘，事务提交时不会做任何事情，在mysql崩溃时，至少丢失1s的事务
+1（默认）：在每次事务提交时都执行log写入cache,并flush log到磁盘（最安全的），保证不会丢失任何已提交的事务
+2（建议）：每次事务提交，执行log数据写入到cache，每秒执行一次flush log到磁盘，2和0的区别是，进程崩溃了，不会丢失任何提交事务，只有down机了才会
+
+Innodb_flush_method=O_DIRECT（影响innodb如何读写数据方式） **
+Innodb_file_per_table=1(控制innodb如何使用表空间，放一个表) **
+Innodb_doublewrite=1(双写缓存，避免数据没写完整导致的数据损坏) **
+
+Myisam I/O相关配置
+delay_key_write(控制关键字脏块什么时候刷新到磁盘文件中)
+OFF：每次写操作后刷新键缓冲中的脏块到磁盘（最安全，性能差）
+ON：只对在建表时制定了delay_key_write选项的表使用延迟刷新
+ALL：对所有MYISAM表都是用延迟键写入（如果服务器崩溃，有些脏块没写入，就会造成表索引损坏，这时候就要修复表了）
 
 
 
