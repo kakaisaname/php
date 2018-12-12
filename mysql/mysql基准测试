@@ -1,0 +1,231 @@
+基准测试是针对系统设置的一种压力测试，直接，简单，易于比较，用于评估服务器的处理能力。忽略了逻辑测试
+压力测试是对真实的业务数据进行测试，获得真实系统所能承受的压力
+
+压力测试需要针对不同主题，所使用的数据和查询也是真实用到的
+基准测试可能不关心业务逻辑，所使用的查询和业务的真实性可以和业务环境没关系
+
+-------------------------如何进行基准测试----------------------------------------
+1、建立mysql服务器的性能基准线
+2、模拟比当前系统更高的负载，以找出系统的扩展瓶颈
+3、测试不同的硬件，软件和操作系统配置
+4、证明新的硬件设备是否配置正确
+
+对整个系统进行基准测试
+优点：
+    能够测试整个系统的性能，包括web服务器缓存、数据库等
+    能反映出系统中各个组件接口间的性能问题，体现真是性能状况
+缺点：
+    测试设计复杂，消耗时间长
+
+单独对mysql进行基准测试
+优点：
+    测试设计简单，耗费时间短
+缺点：
+    无法全面了解整个系统的性能基线
+
+Mysql基准测试的常见指标：（衡量数据库的吞吐量） ==============================================
+1、单位时间内所处理的事务数（TPS）
+2、单位时间内所处理的查询数（QPS）
+3、响应时间
+    平均响应时间、最小响应时间、最大响应时间、各时间占的百分比
+4、并发量：同时处理的查询请求的 数量（正在工作中的并发的操作数或同时工作的数量）
+
+--------------------------------------------基准测试的步骤---------------------------------
+计划和设计基准测试
+    1、对整个系统还是某一组件
+    2、使用什么样的数据
+    3、准备基准测试及数据收集脚本（CPU使用率，IO，网络流量，状态与计数器信息等）
+    4、运行基准测试
+    5、保存和分析基准测试数据
+
+基准测试中容易忽略的问题
+1、使用生产环境数据时只使用了部分数据 （推荐使用数据库完全备份来测试）
+2、在多用户场景中，只做单用户的测试 （推荐使用多线程并发测试）
+3、单服务器上测试分布式应用 （推荐使用相同架构进行测试）
+4、反复执行同一查询（容易缓存命中，无法反应真实查询性能）
+
+----------------------------------------------基准测试工具mysqlslap------------------------------
+特点：默认安装有
+    1、可以模拟服务器负载，并输出相关统计信息
+    2、可以指定也可以自动生成查询语句
+
+常用参数
+--concurrency  #代表并发数量，多个可以用逗号隔开。例如：--concurrency=50,200,500
+--engine  #代表要测试的引擎，可以有多个，用分隔符隔开。例如：--engines=myisam,innodb,memory
+--iterations #代表要在不同并发环境下，各自运行测试多少次。
+--auto-generate-sql #代表用mysqlslap工具自己生成的SQL脚本来测试并发压力。
+--auto-generate-sql-add-autoincrement  #代表对生成的表自动添加auto_increment列，从5.1.18版本开始，
+--auto-generate-sql-load-type  #代表要测试的环境是读操作还是写操作还是两者混合的（read,write,update,mixed）
+--number-of-queries  #代表总共要运行多少条查询。
+--debug-info  #代表要额外输出CPU以及内存的相关信息。
+--number-int-cols  #代表示例表中的INTEGER类型的属性有几个。
+--number-char-cols  #代表示例表中的vachar类型的属性有几个。
+--create-schema   #代表自定义的测试库名称。
+--query  #代表自定义的测试SQL脚本。
+--only-print        只输出模拟执行的结果，不实际执行
+
+mysqlslap --help （查看是否安装及帮助） ------
+mysqlslap  Ver 1.0 Distrib 5.7.14, for Linux (x86_64)
+Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+
+mysqlslap --concurrency=1,50,100,200 --iterations=3 --number-int-cols=5 --number-char-cols=5 --auto-generate-sql --auto-generate-sql-add-autoincrement --engine=myisam,innodb --number-of-queries=10 --create-schema=sbtest
+查询结果 ****************************************************（看出innodb的性能要优于myisam）
+Benchmark
+Running for engine myisam
+Average number of seconds to run all queries: 0.014 seconds
+Minimum number of seconds to run all queries: 0.013 seconds
+Maximum number of seconds to run all queries: 0.015 seconds
+Number of clients running queries: 1
+Average number of queries per client: 10
+
+Benchmark
+Running for engine myisam
+Average number of seconds to run all queries: 0.821 seconds
+Minimum number of seconds to run all queries: 0.779 seconds
+Maximum number of seconds to run all queries: 0.850 seconds
+Number of clients running queries: 50
+Average number of queries per client: 0
+
+Benchmark
+Running for engine myisam
+Average number of seconds to run all queries: 1.721 seconds
+Minimum number of seconds to run all queries: 1.689 seconds
+Maximum number of seconds to run all queries: 1.757 seconds
+Number of clients running queries: 100
+Average number of queries per client: 0
+
+Benchmark
+Running for engine myisam
+Average number of seconds to run all queries: 3.563 seconds
+Minimum number of seconds to run all queries: 3.395 seconds
+Maximum number of seconds to run all queries: 3.769 seconds
+Number of clients running queries: 200
+Average number of queries per client: 0
+
+Benchmark
+Running for engine innodb
+Average number of seconds to run all queries: 0.022 seconds
+Minimum number of seconds to run all queries: 0.018 seconds
+Maximum number of seconds to run all queries: 0.029 seconds
+Number of clients running queries: 1
+Average number of queries per client: 10
+
+Benchmark
+Running for engine innodb
+Average number of seconds to run all queries: 0.270 seconds
+Minimum number of seconds to run all queries: 0.240 seconds
+Maximum number of seconds to run all queries: 0.300 seconds
+Number of clients running queries: 50
+Average number of queries per client: 0
+
+Benchmark
+Running for engine innodb
+Average number of seconds to run all queries: 0.627 seconds
+Minimum number of seconds to run all queries: 0.599 seconds
+Maximum number of seconds to run all queries: 0.670 seconds
+Number of clients running queries: 100
+Average number of queries per client: 0
+
+Benchmark
+Running for engine innodb
+Average number of seconds to run all queries: 1.034 seconds
+Minimum number of seconds to run all queries: 1.008 seconds
+Maximum number of seconds to run all queries: 1.060 seconds
+Number of clients running queries: 200
+Average number of queries per client: 0
+
+//--only_print 打印出语句的具体执行
+mysqlslap --concurrency=1,50,100,200 --iterations=3 --number-int-cols=5 --number-char-cols=5 --auto-generate-sql --auto-generate-sql-add-autoincrement --engine=myisam,innodb --number-of-queries=10 --create-schema=sbtest --only_print|more
+DROP SCHEMA IF EXISTS `sbtest`;
+CREATE SCHEMA `sbtest`;
+use sbtest;
+set default_storage_engine=`myisam`;
+CREATE TABLE `t1` (id serial,intcol1 INT(32) ,intcol2 INT(32) ,intcol3 INT(32) ,intcol4 INT(32) ,intcol5 INT(32) ,charcol1 VARCHAR(128),charcol2 VARCHAR(12
+8),charcol3 VARCHAR(128),charcol4 VARCHAR(128),charcol5 VARCHAR(128));
+INSERT INTO t1 VALUES (NULL,1804289383,846930886,1681692777,1714636915,1957747793,'vmC9127qJNm06sGB8R92q2j7vTiiITRDGXM9ZLzkdekbWtmXKwZ2qG1llkRw5m9DHOFilERE
+k3q7oce8O3BEJC0woJsm6uzFAEynLH2xCsw1KQ1lT4zg9rdxBLb97R','GHZ65mNzkSrYT3zWoSbg9cNePQr1bzSk81qDgE4Oanw3rnPfGsBHSbnu1evTdFDe83ro9w4jjteQg4yoo9xHck3WNqzs54W5zE
+m92ikdRF48B2oz3m8gMBAl11Wy50','w46i58Giekxik0cYzfA8BZBLADEg3JhzGfZDoqvQQk0Akcic7lcJInYSsf9wqin6LDC1vzJLkJXKn5onqOy04MTw1WksCYqPl2Jg2eteqOqTLfGCvE4zTZwWvgMz
+4D','Ph7kD1E6f4MMQk1ioopsoIIcoD83DD8Wu7689K6oHTAjD3Hts6lYGv8x9G0EL0k87q8G2ExJjz2o3KhnIJBbEJYFROTpO5pNvxgyBT9nSCbNO9AiKL9QYhi0x3hL9W','lwRHuWm4HE8leYmg66uGY
+Ip6AnAr0BDd7YmuvYqCfqp9EbhKZRSymA4wx6gpHlJHI53DetH9j7Ixar90Jey5outd1ZIAJdJTjMaD7rMiqYXHFhHaB7Xr1HKuqe51GG');
+
+
+-------------------mysqlslap并不能很好的体现innodb引擎的性能-------sysbench测试工具（更为通用）-----------------------
+mysqlslap并没有在innodb表上自增列上建立索引，性能有些影响
+具体参考文章：http://www.cnblogs.com/chenmh/p/5866058.html
+sysbench主要用于以下性能测试：
+    文件I/O性能
+    调度
+    内存分配和传输
+    POSIX线程
+    数据库
+    Oltp测试要制定具体的lua脚本 （lua脚本位于/downloads/sysbench-1.0.15/tests/include/oltp_legacy）
+安装说明：
+wget https://github.com/akopytov/sysbench/archive/1.0.15.tar.gz
+tar -zxvf 1.0.15.tar.gz
+cd sysbench-1.0.15/
+报错：libtoolize 1.4+ wasn't found, exiting
+解决：yum -y install libtool
+./configure --with-mysql-includes=/usr/local/mysql/include/ --with-mysql-libs=/usr/local/mysql/lib/ (具体目录具体填写)
+
+成功后显示以下信息：
+===============================================================================
+sysbench version   : 1.0.15
+CC                 : gcc -std=gnu99
+CFLAGS             : -O2 -funroll-loops -ggdb3  -march=core-avx2 -Wall -Wextra -Wpointer-arith -Wbad-function-cast -Wstrict-prototypes -Wnested-externs -Wno-format-zero-length -Wundef -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wcast-align   -pthread
+CPPFLAGS           : -D_GNU_SOURCE   -I$(top_srcdir)/src -I$(abs_top_builddir)/third_party/luajit/inc -I$(abs_top_builddir)/third_party/concurrency_kit/include
+--------
+make
+make install
+
+一般语法
+prepare:用于文件IO和数据库OLTP测试的数据准备阶段。
+run:性能测试阶段
+cleanup:移除测试过程中产生的数据
+help:显示帮助信息，获取--test帮助可以使用--test=name --help
+主要的参数有：
+--mysql-db 用于指定执行基准测试的数据库名  **
+--mysql-table-engine 用于指定所使用的存储引擎 **
+--oltp-tables-count 执行测试的表的数量
+--oltp-table-size   指定每个表中的数据行数
+--num-threads       指定测试的并发线程数量
+--max-time          指定最大的测试时间
+--report-interval   指定间隔多长时间输出一次统计信息
+--mysql-user        指定执行测试的mysql用户
+--mysql-password    指定执行测试的mysql用户的密码
+prepare             用于准备测试数据
+run                 用于实际进行测试
+cleanup             用于清理测试数据
+--max-requests
+--test              指定测试的类型
+以下几个参数也经常会使用：
+--max-time 最大的测试时长
+--debug(开启debug可以显示更详细的每个线程的执行情况)
+
+-------------------------对CPU的性能测试通常有：1. 通过算质数；2计算圆周率等；sysbench使用的就是通过质数相加的测试。对CPU测试直接运行run即可-----------
+sysbench --test=cpu --cpu-max-prime=10000 run （测试单核cpu）
+//得到的数据为：
+CPU speed:
+events per second:   550.18
+
+General statistics:
+total time:                          10.0004s （执行这条压力测试所花费的时间）
+total number of events:              5512
+
+Latency (ms):                                   （单个请求的时间）
+min:                                    1.43    （最小）
+avg:                                    1.81    （平均）
+max:                                    4.02    （最大）
+95th percentile:                        2.11    （95%在2.11s）
+sum:                                 9972.20
+
+Threads fairness:
+events (avg/stddev):           5512.0000/0.00
+execution time (avg/stddev):   9.9722/0.00
+
+sysbench --num-threads=12 --max-requests=10000 --debug=on --test=cpu --cpu-max-prime=20000 run
+(12个线程执行1万条请求，每个请求执行质数相加到20000)
+
+----------------------对文件IO进行测试-----------------------------------------
+
+
+
