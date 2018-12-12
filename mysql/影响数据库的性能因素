@@ -569,3 +569,330 @@ use remote;
 +----+-----+-----+
 使用场景：  （一般不会用到这种存储引擎） ********
 偶尔的统计分析及手工查询
+
+---------------------------------------如何选择正确的存储引擎-----------------------------
+大多数情况下都应该使用innodb
+参考条件：
+    事务： innodb
+    主要是select、insert操作：可以选择myisam,基本是insert操作，可以选择archive引擎
+    备份：（在线热备，就只有innodb）
+    崩溃恢复：（down机恢复，也应该选择innodb，myisam恢复比较慢）
+    存储引擎的特有特性，最好不要混合使用一种存储引擎（无法实现完整的在线热备等） ***
+
+--------------------------------------mysql服务器参数-----------------------------------
+mysql获取配置信息路径： ----------------
+1、命令行参数
+    mysql_safe --datadir=/data/mysql
+2、配置文件
+    /etc/my.cnf (centos中)
+
+mysql配置参数的作用域：
+1、全局参数（需要在mysql客户端执行）需要退出当前session才会生效，或者在另外一个session中查看
+    set global 参数名=参数值
+    或 set @@global.参数名:=参数值
+2、会话参数
+    set [session] 参数名=参数值
+    或 set @@session.参数名:=参数值
+例子：
+interactive_timeout针对交互式连接，wait_timeout针对非交互式连接
+通过mysql客户端连接数据库是交互式连接，通过jdbc连接数据库是非交互式连接
+show variables where variable_name='wait_timeout' or variable_name='interactive_timeout';
++---------------------+-------+
+| Variable_name       | Value |
++---------------------+-------+
+| interactive_timeout | 28800 |
+| wait_timeout        | 28800 |
++---------------------+-------+
+调整：
+set global wait_timeout=3600;set global interactive_timeout=3600;
+Query OK, 0 rows affected (0.00 sec)
+在另外一个客户端连接中：（发现已经更改了）
+show variables where variable_name='wait_timeout' or variable_name='interactive_timeout';
++---------------------+-------+
+| Variable_name       | Value |
++---------------------+-------+
+| interactive_timeout | 3600  |
+| wait_timeout        | 3600  |
++---------------------+-------+
+
+内存配置相关参数---------------------------
+1、确定可以使用的内存的上限
+2、确定mysql的每个连接使用的内存
+下面参数每个线程都要分配的，多个连接分配多个
+（sort_buffer_size(查询的时候分配)，join_buffer_size(连接缓冲区)，read_buffer_size(读缓冲区大小（4k倍数）)，
+read_rnd_buffer_size(索引缓冲区大小，查询需要时分配内存)）
+
+3、确定需要为操作系统保留多少内存（做好单独分配服务器，也不要在一台服务器上分配多个mysql实例）
+4、如何为缓存池分配内存 **
+innodb_buffer_pool_size(这个比较重要，定义innodb缓冲池使用内存的大小)，innodb引擎不仅要缓存索引，还要缓存数据，帮助延迟写入。。。
+如果都用的是innodb引擎，调整innodb_buffer_pool_size大小需要重启服务器（5.7版本后）
+innodb_buffer_pool_size = 总内存-（每个线程需要的内存*连接数）-系统保留内存
+
+key_buffer_size(主要用于myisam引擎)，只会缓存索引，目前mysql系统表还是使用的myisam引擎
+//查询myisam、innodb引擎占用索引表空间大小 **
+select sum(index_length) from information_schema.tables where engine='myisam';
++-------------------+
+| sum(index_length) |
++-------------------+
+|             44032 |
++-------------------+
+select sum(index_length) from information_schema.tables where engine='innodb';
++-------------------+
+| sum(index_length) |
++-------------------+
+|            180224 |
++-------------------+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
