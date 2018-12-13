@@ -226,6 +226,222 @@ sysbench --num-threads=12 --max-requests=10000 --debug=on --test=cpu --cpu-max-p
 (12个线程执行1万条请求，每个请求执行质数相加到20000)
 
 ----------------------对文件IO进行测试-----------------------------------------
+查看内存量：free -m （内存大小在2个G左右）
+buffers/cache占用的较多，说明系统中有进程曾经读写过文件，但是不要紧，这部分内存是当空闲来用的
+Linux内核会在内存将要耗尽的时候，触发内存回收的工作，以便释放出内存给急需内存的进程使用。一般情况下，
+这个操作中主要的内存释放都来自于对buffer／cache的释放。尤其是被使用更多的cache空间。既然它主要用来做缓存，
+只是在内存够用的时候加快进程对文件的读写速度，那么在内存压力较大的情况下，当然有必要清空释放cache，
+作为free空间分给相关进程使用。所以一般情况下，我们认为buffer/cache空间可以被释放
+free -m
+               total        used        free      shared  buff/cache   available
+Mem:           1999         310         146         108        1543        1375
+Swap:          3999          81        3918
+查看磁盘空间：
+df -lh   （还有21G）
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1        40G   18G   21G  46% /
+devtmpfs        990M     0  990M   0% /dev
+
+sysbench --test=fileio --file-total-size=2G prepare（准备两个G的演示数据）生成了99个16M的文件
+-rw------- 1 root root  16M Dec 12 18:44 test_file.97
+-rw------- 1 root root  16M Dec 12 18:44 test_file.98
+-rw------- 1 root root  16M Dec 12 18:44 test_file.99
+文件IO的测试主要用于测试IO的负载性能。主要的测试选项为--file-test-mode。还有几个可以关注的参数包括--file-block-size、--file-io-mode、--file-fsync-freq 、--file-rw-ratio
+--file-num=N                   创建测试文件的数量,默认128个
+--file-block-size=N          block size大小,默认16K
+--file-total-size=SIZE       所有文件的总大小，默认2G
+--file-test-mode=STRING      测试类型 {seqwr(顺序写), seqrewr(顺序读写), seqrd(顺序读), rndrd(随机读), rndwr(随机写), rndrw(随机读写)}
+--file-io-mode=STRING         I/O模式,需要系统支持默认sync[sync(同步IO),async(异步IO),mmap()]
+--file-async-backlog=N        每个线程的异步操作队列数，默认128个，需要--file-io-mode=async;
+--file-extra-flags=STRING     additional flags to use on opening files {sync,dsync,direct} []
+--file-fsync-freq=N           当请求数达到多少时执行fsync()刷新,默认100,0代表过程中不执行fsync()
+--file-fsync-all=[on|off]     执行每一个写操作后执行fsync()刷新操作,默认关闭off
+--file-fsync-end=[on|off]     测试结束执行fsync()操作,默认开启on
+--file-fsync-mode=STRING      同步刷新方法,默认fsync {fsync, fdatasync}
+--file-merged-requests=N      合并指定数量的IO请求,0代表不合并,默认0
+--file-rw-ratio=N            读写比例，默认1.5/1
+
+数据库一般为混合随机读写 ****** ----------------------------------------------------------------------------------------------------------****
+sysbench --test=fileio --num-threads=8 --file-total-size=1G --file-test-mode=rndrw --report-interval=1 run (执行语句)
+WARNING: the --test option is deprecated. You can pass a script name or path on the command line without any options.
+WARNING: --num-threads is deprecated, use --threads instead
+sysbench 1.0.15 (using bundled LuaJIT 2.1.0-beta2)
+
+Running the test with following options:
+Number of threads: 8
+Report intermediate results every 1 second(s)
+Initializing random number generator from current time
+
+
+Extra file open flags: (none)
+128 files, 8MiB each
+1GiB total file size
+Block size 16KiB
+Number of IO requests: 0
+Read/Write ratio for combined random IO test: 1.50
+Periodic FSYNC enabled, calling fsync() each 100 requests.
+Calling fsync() at the end of test, Enabled.
+Using synchronous I/O mode
+Doing random r/w test
+Initializing worker threads...
+
+Threads started!
+
+[ 1s ] reads: 9.29 MiB/s writes: 6.19 MiB/s fsyncs: 1148.78/s latency (ms,95%): 18.950
+[ 2s ] reads: 10.35 MiB/s writes: 6.88 MiB/s fsyncs: 1409.26/s latency (ms,95%): 14.995
+[ 3s ] reads: 7.00 MiB/s writes: 4.70 MiB/s fsyncs: 1022.93/s latency (ms,95%): 18.950
+[ 4s ] reads: 7.89 MiB/s writes: 5.25 MiB/s fsyncs: 1024.01/s latency (ms,95%): 20.002
+[ 5s ] reads: 9.08 MiB/s writes: 6.02 MiB/s fsyncs: 1278.96/s latency (ms,95%): 17.319
+[ 6s ] reads: 9.86 MiB/s writes: 6.53 MiB/s fsyncs: 1372.09/s latency (ms,95%): 16.408
+[ 7s ] reads: 6.77 MiB/s writes: 4.56 MiB/s fsyncs: 931.96/s latency (ms,95%): 20.002
+[ 8s ] reads: 8.84 MiB/s writes: 5.92 MiB/s fsyncs: 1152.81/s latency (ms,95%): 20.366
+[ 9s ] reads: 10.50 MiB/s writes: 7.00 MiB/s fsyncs: 1408.29/s latency (ms,95%): 14.995
+[ 10s ] reads: 8.64 MiB/s writes: 5.75 MiB/s fsyncs: 1277.98/s latency (ms,95%): 19.295
+
+File operations:  （文件操作） ****
+reads/s:                      562.25
+writes/s:                     374.53
+fsyncs/s:                     1298.78
+
+Throughput:        （吞吐量） ****
+read, MiB/s:                  8.79
+written, MiB/s:               5.85
+
+General statistics: （一般统计） ***
+total time:                          10.0504s
+total number of events:              21449
+
+Latency (ms):  （等待时间） ***
+min:                                    0.00
+avg:                                    3.73
+max:                                  238.07
+95th percentile:                       18.28    ***//95%在18.28ms
+sum:                                79999.89
+
+Threads fairness:
+events (avg/stddev):           2681.1250/89.37
+execution time (avg/stddev):   10.0000/0.00
+
+--------------------------------------------------------------对数据库的基准测试--------------------------------
+OLTP，也叫联机事务处理（Online Transaction Processing），表示事务性非常高的系统，一般都是高可用的在线系统
+，一般看其每秒执行的Transaction以及Execute SQL的数量。在这样的系统中，单个数据库每秒处理的Transaction往往超过几百个，或者是几千个，
+Select 语句的执行量每秒几千甚至几万个。典型的OLTP系统有电子商务系统、银行、证券等，如美国eBay的业务数据库，就是很典型的OLTP数据库。
+OLTP系统最容易出现瓶颈的地方就是CPU与磁盘子系统
+
+创建测试数据库
+create database test1;
+创建数据库用户
+grant all privileges on *.* to sbtest@'127.0.0.1' identified by 'Caoyi260027!';
+
+运用lua脚本：
+cd /downloads/sysbench-1.0.15/tests/include/oltp_legacy
+ls -lh *lua
+-rw-rw-r-- 1 root root 1.2K Jul  4 03:49 bulk_insert.lua
+-rw-rw-r-- 1 root root 4.6K Jul  4 03:49 common.lua
+-rw-rw-r-- 1 root root  366 Jul  4 03:49 delete.lua
+-rw-rw-r-- 1 root root 1.2K Jul  4 03:49 insert.lua
+-rw-rw-r-- 1 root root 3.0K Jul  4 03:49 oltp.lua
+-rw-rw-r-- 1 root root  368 Jul  4 03:49 oltp_simple.lua
+-rw-rw-r-- 1 root root  527 Jul  4 03:49 parallel_prepare.lua
+-rw-rw-r-- 1 root root  369 Jul  4 03:49 select.lua
+-rw-rw-r-- 1 root root 1.5K Jul  4 03:49 select_random_points.lua
+-rw-rw-r-- 1 root root 1.6K Jul  4 03:49 select_random_ranges.lua
+-rw-rw-r-- 1 root root  369 Jul  4 03:49 update_index.lua
+-rw-rw-r-- 1 root root  578 Jul  4 03:49 update_non_index.lua
+
+--oltp-table-size 表大小
+--mysql-table-engine 使用的引擎
+--mysql-db 指定数据库
+--mysql-user 数据库用户
+--mysql-password 数据库密码
+--oltp-tables-count 表数量
+--mysql-sock 加快连接速度
+
+//生成测试表和数据 ******
+sysbench --test=./oltp.lua --mysql-table-engine=innodb --oltp-table-size=10000 --mysql-db=test1 --mysql-user=sbtest --mysql-password=Caoyi260027! --oltp-tables-count=10 --mysql-socket=/dev/shm/mysql.sock prepare
+Creating table 'sbtest1'...
+Inserting 10000 records into 'sbtest1'
+Creating secondary indexes on 'sbtest1'...
+Creating table 'sbtest2'...
+Inserting 10000 records into 'sbtest2'
+Creating secondary indexes on 'sbtest2'...
+Creating table 'sbtest3'...
+Inserting 10000 records into 'sbtest3'
+Creating secondary indexes on 'sbtest3'...
+Creating table 'sbtest4'...
+Inserting 10000 records into 'sbtest4'
+Creating secondary indexes on 'sbtest4'...
+Creating table 'sbtest5'...
+Inserting 10000 records into 'sbtest5'
+Creating secondary indexes on 'sbtest5'...
+Creating table 'sbtest6'...
+Inserting 10000 records into 'sbtest6'
+Creating secondary indexes on 'sbtest6'...
+Creating table 'sbtest7'...
+Inserting 10000 records into 'sbtest7'
+Creating secondary indexes on 'sbtest7'...
+Creating table 'sbtest8'...
+Inserting 10000 records into 'sbtest8'
+Creating secondary indexes on 'sbtest8'...
+Creating table 'sbtest9'...
+Inserting 10000 records into 'sbtest9'
+Creating secondary indexes on 'sbtest9'...
+Creating table 'sbtest10'...
+Inserting 10000 records into 'sbtest10'
+Creating secondary indexes on 'sbtest10'...
+
+show tables;
++-----------------+
+| Tables_in_test1 |
++-----------------+
+| sbtest1         |
+| sbtest10        |
+| sbtest2         |
+| sbtest3         |
+| sbtest4         |
+| sbtest5         |
+| sbtest6         |
+| sbtest7         |
+| sbtest8         |
+| sbtest9         |
+
+select count(*) from sbtest1;
++----------+
+| count(*) |
++----------+
+|    10000 |
++----------
+
+//准备测试 -------------------------------
+搜集系统运行时的状态
+cd /downloads/sysbench-1.0.15/script （目录下的脚本是自己传的）
+搜集系统状态，执行脚本
+./Get_Test_info.sh & （后台运行）
+cd /home/sysbench/benchmarks 可以看到脚本建立了几个文件
+ls -lh
+total 1.2M
+-rw-r--r-- 1 root root 161K Dec 12 19:37 5-sec-status-2018-12-12_07-innodbstatus
+-rw-r--r-- 1 root root  26K Dec 12 19:37 5-sec-status-2018-12-12_07-processlist
+-rw-r--r-- 1 root root 329K Dec 12 19:37 5-sec-status-2018-12-12_07-status
+-rw-r--r-- 1 root root 197K Dec 12 21:14 5-sec-status-2018-12-12_09-innodbstatus
+-rw-r--r-- 1 root root  25K Dec 12 21:14 5-sec-status-2018-12-12_09-processlist
+-rw-r--r-- 1 root root 413K Dec 12 21:14 5-sec-status-2018-12-12_09-status
+-rw-r--r-- 1 root root    2 Dec 12 21:10 running
+
+sysbench --test=./oltp.lua --mysql-table-engine=innodb --oltp-table-size=10000 --mysql-db=test1 --mysql-user=sbtest --mysql-password=Caoyi260027! --oltp-tables-count=10 --mysql-sock=/dev/shm/mysql.sock run
+
+去数据库中：
+
+mysql> show processlist;
++------+--------+-----------+-------+---------+------+----------+------------------+
+| Id   | User   | Host      | db    | Command | Time | State    | Info             |
++------+--------+-----------+-------+---------+------+----------+------------------+
+| 2889 | root   | localhost | NULL  | Query   |    0 | starting | show processlist |
+| 2950 | sbtest | localhost | test1 | Query   |    0 | starting | COMMIT           |
++------+--------+-----------+-------+---------+------+----------+------------------+
+
+//查看系统状态信息 每5s获取当前系统的变量信息 等等
+cat 5-sec-status-2018-12-12_09-status
 
 
 
