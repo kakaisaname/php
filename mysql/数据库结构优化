@@ -1,0 +1,143 @@
+对数据库影响最大的就是数据库的结构了
+良好的数据库逻辑设计和物理设计是数据库获得高性能的基础
+
+数据库结构优化的目的：
+1、尽量减少数据冗余
+2、尽量避免数据库中出现更新，插入和删除异常 （表冗余造成的）
+    插入异常：如果表中的某个实体随着另一个实体而存在
+create table `selectcourse`(
+    study_no int(11) NOT NULL COMMENT '学号',
+    study_name varchar(10) NOT NULL COMMENT '姓名',
+    birth_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '生日',
+    course_name varchar(10) NOT NULL COMMENT '课程名称',
+    score int(11) DEFAULT NULL COMMENT '成绩',
+    course_point int(11) NOT NULL COMMENT '学分',
+    PRIMARY KEY (study_no,course_name)
+) engine=InnoDB DEFAULT CHARSET=utf8
+
+这个学分表，如果想要加一门课程,就会存在插入异常 **(在没有学生选择这门课时无法把新课程插入到表中)
+insert into selectcourse(course_name,course_point) values('语文',10);
+ERROR 1364 (HY000): Field 'study_no' doesn't have a default value
+
+    更新异常：如果更改表中的某个实体的单独属性是，需要对多行进行更新
+还是selectcourse这个表，如果要更新课程为（假如是数学）的学分时，就会更新很多行数据
+    删除异常：如果删除表中的某一个实体则会导致其他实体的消失
+还是selectcourse这个表，如果要删除课程为（假如是数学）时，就会删除很多行数据
+
+3、节约数据存储空间
+4、提高查询效率
+
+-----------------------------------数据库结构设计的步骤-------------------------------------
+1、需求分析：全面了解产品设计的存储需求  ******
+    存储需求、数据处理需求、数据的安全性和完整性
+2、逻辑设计：设计数据的逻辑存储结构，数据实体之间的逻辑关系，解决数据冗余和数据维护异常
+3、物理设计：根据所使用的数据库特点进行表结构设计
+    关系型数据库：Oracle、SQLServer、Mysql,postgresSQL
+    非关系型数据库：mongo,Redis,Hadoop
+    存储引擎：Innodb
+维护优化：根据实际情况对索引、存储结构等进行优化
+
+--------------------------------数据库设计范式--------------------------------------
+设计出没有数据冗余和数据维护异常的数据库结构
+做到数据库三范式差不多就可以满足设计需求了
+
+数据可设计的第一范式：
+1、表中的所有字段都只有单一属性
+2、单一属性的列是由基本的数据类型锁构成
+3、设计出的表都是二维表
+selectcourse 这个表就满足
+
+数据库设计的第二范式：（也就是只能有一个主键）
+1、一个表中只具有一个业务主键
+2、不能存在非主键列只对部分主键的依赖关系 （selectcourse这个表中就有两个主键，如course_point（学分）只依赖course_name（课程名））
+拆分：学生表、课程表、学生选课关系表
+create table study(
+    study_no int(11) NOT NULL COMMENT '学号',
+    study_name varchar(10) NOT NULL COMMENT '姓名',
+    birth_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '生日',
+    school_name varchar(20) not null comment '学院名称',
+    school_tel varchar(20) not null comment '学院电话',
+    PRIMARY KEY (study_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+create table course(
+    course_name varchar(10) NOT NULL COMMENT '课程名称',
+    course_point int(11) NOT NULL COMMENT '学分',
+    PRIMARY KEY (course_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+create table syudycourse(
+    study_no int(11) NOT NULL COMMENT '学号',
+    course_name varchar(10) NOT NULL COMMENT '课程名称',
+    score int(11) DEFAULT NULL COMMENT '成绩',
+    PRIMARY KEY (study_no,course_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+但是学生表（study）还存在数据冗余的问题，学院名称，学院电话。
+
+-------------数据库设计的第三范式：
+每一个非主属性既不部分依赖也不传递依赖于业务主键，也就是在第二范式的基础上消除了非主属性对主键的传递依赖
+
+学生表：学生的学号可以确定学生所在的学院，学院的电话和学院也有依赖关系，所以，学院电话对于学号来说有传递依赖的关系
+所以这张表不符合第三范式需求，需要拆分为学生表和学院表
+create table study_inf(
+    study_no int(11) NOT NULL COMMENT '学号',
+    study_name varchar(10) NOT NULL COMMENT '姓名',
+    birth_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '生日',
+    school_name varchar(20) not null comment '学院名称',
+    PRIMARY KEY (study_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+create table school_inf(
+    school_name varchar(20) not null comment '学院名称',
+    school_tel varchar(20) not null comment '学院电话',
+    PRIMARY KEY (school_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+----------------------------------------------需求分析及逻辑设计--------------------------------
+需求：设计一个电子商务网站
+一、销售图书类商品
+二、功能：
+用户登录，用户管理、商品展示、商品管理、供应商管理、在线销售
+1、用户登录及用户管理
+用户必须注册并登录才能进行网上交易
+用户名作为用户信息的业务主键
+同一时间一个用户只能在一个地方登录
+用户信息：{用户名，密码，手机号，姓名，注册日期，在线状态，出生日期}
+只有一个主键，肯定符合第二范式，没有属性和业务主键有传递依赖关系，符合第三范式 **
+
+2、商品展示及商品管理功能
+商品信息：{商品名称，出版社名称，图书价格，图书描述，作者}
+分类信息：{分类名称，分类描述}
+商品分类（对应关系表）：{商品名称，分类名称（联合业务主键）}
+
+3、供应商管理
+供应商信息：{出版社名称，地址，电话,联系人，银行账号}
+
+4、在线销售功能
+订单表：{订单编号，下单用户名，下单日期，支付金额，物流单号}
+订单商品关联表：{订单编号，订单商品分类，订单商品名，商品数量}
+
+//查询出每一个用户的订单总金额  （我去，这表没设计好） **
+select 下单用户名，sum(d.商品价格*b.商品数量) from 订单表 a join 订单商品关联表 b on a.订单编号=b.订单编号
+    join 商品分类关联表 c on c.商品名称=b.商品名称 and c.分类名称=b.订单商品分类 join 商品信息表 d on d.商品名称=c.商品名称
+    group by 下单用户名
+
+如果商品价格变动，会出现什么结果？（历史订单出错了）
+
+假设下单用户就是商品的收货人，我们在发货前一定要查询出每个订单的下单人的信息，而这些信息全部记录在用户信息表中，
+select a.订单号,e.用户名,e.手机号,d.商品名称,c.商品数量,d.商品价格
+from 订单表 a join 订单商品关联表 b on a.订单编号=b.订单编号 join 商品分类关联表 c on c.商品名称=b.商品名称
+and c.分类名称=b.订单商品分类 join 商品信息表 d on d.商品名称=c.商品名称 join 用户信息表 e on e.用户名=a.下单用户名
+
+完全符合范式化的设计优势并不能得到良好的SQL查询性能
+反范式化设计：为了性能和读取效率考虑而是当的对数据库设计范式的要求进行违反，允许存在少量的数据冗余，就是使用空间来换取时间
+
+改造：****
+将商品信息，分类信息，商品分类关系 三张表改造
+
+商品信息：{商品名称，分类名称，出版社名称，图书价格，图书描述，作者}
+分类信息：{分类名称，分类描述}
+
+
+
+
+
+
+
