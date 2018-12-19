@@ -43,7 +43,7 @@ $arr = array(1, 2, 3, 4);
 foreach ($arr as &$value) {
 $value = $value * 2;
 }
-unset($value);   // $value 不再引用 $arr[3]
+unset($value);   // $value 不再引用 $arr[3]   -----------------------------------------**************-----------------------
 
 常见错误 #2： 误解 isset() 的行为
 尽管名字叫 isset，但是 isset() 不仅会在变量不存在的时候返回 false，在变量值为 null 的时候也会返回 false。
